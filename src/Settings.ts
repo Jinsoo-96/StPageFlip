@@ -57,6 +57,9 @@ export interface FlipSetting {
 
     /** if this value is true, flipping by clicking on the whole book will be locked. Only on corners */
     disableFlipByClick: boolean;
+
+    /** 코너 호버 민감도 변수 : 디폴트 = 5 더 민감하게 숫자를 더 작게, 덜 민감하게 숫자를 더 크게 */
+    cornerSensitivity?: number;
 }
 
 export class Settings {
@@ -82,6 +85,7 @@ export class Settings {
         useMouseEvents: true,
         showPageCorners: true,
         disableFlipByClick: false,
+        cornerSensitivity: 5, // Default sensitivity for corner hover
     };
 
     /**

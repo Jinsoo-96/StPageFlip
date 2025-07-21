@@ -254,7 +254,7 @@ export class Flip {
      */
     public flipPrev(corner: FlipCorner): void {
         this.flip({
-            x: 10,
+            x: this.render.getRect().left + 10,
             y: corner === FlipCorner.TOP ? 1 : this.render.getRect().height - 2,
         });
     }
@@ -399,9 +399,11 @@ export class Flip {
     private getAnimationDuration(size: number): number {
         const defaultTime = this.app.getSettings().flippingTime;
 
-        if (size >= 1000) return defaultTime;
+        const rect = this.getBoundsRect();
+        const ratio = rect.pageWidth / 300;
+        const timePerPoint = defaultTime / 600;
 
-        return (size / 1000) * defaultTime;
+        return (size / ratio) * timePerPoint;
     }
 
     private checkDirection(direction: FlipDirection): boolean {
@@ -433,7 +435,8 @@ export class Flip {
         const rect = this.getBoundsRect();
         const pageWidth = rect.pageWidth;
 
-        const operatingDistance = Math.sqrt(Math.pow(pageWidth, 2) + Math.pow(rect.height, 2)) / 5;
+        const sensitivityDivider = this.app.getSettings().cornerSensitivity || 5;
+        const operatingDistance = Math.sqrt(Math.pow(pageWidth, 2) + Math.pow(rect.height, 2)) / sensitivityDivider;
 
         const bookPos = this.render.convertToBook(globalPos);
 
