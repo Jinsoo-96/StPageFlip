@@ -98,8 +98,9 @@ export class Settings {
      * @param userSetting
      * @returns {FlipSetting} Сonfiguration object
      */
-    public getSettings(userSetting: Record<string, number | string | boolean>): FlipSetting {
-        const result = this._default;
+    public getSettings(userSetting: Partial<FlipSetting>): FlipSetting {
+        // 🎯 Record<string, number | string | boolean> → Partial<FlipSetting>으로 변경
+        const result = { ...this._default }; // 🎯 spread operator로 복사
         Object.assign(result, userSetting);
 
         if (result.size !== SizeType.STRETCH && result.size !== SizeType.FIXED)
