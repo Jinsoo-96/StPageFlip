@@ -22,8 +22,6 @@ export abstract class UI {
     private touchPoint: SwipeData = null;
     private readonly swipeTimeout = 250;
     private readonly swipeDistance: number;
-    // UI 클래스에 스와이프 상태 추가 (스와이프중 접힘 방지)
-    private isSwipeInProgress = false;
 
     private onResize = (): void => {
         this.update();
@@ -199,12 +197,9 @@ export abstract class UI {
                     time: Date.now(),
                 };
 
-                this.isSwipeInProgress = false; // 🎯 스와이프 상태 초기화
-
                 // part of swipe detection
                 setTimeout(() => {
-                    if (this.touchPoint !== null && !this.isSwipeInProgress) {
-                        // 🎯 스와이프 중이 아닐 때만
+                    if (this.touchPoint !== null) {
                         this.app.startUserTouch(pos);
                     }
                 }, this.swipeTimeout);
@@ -230,17 +225,6 @@ export abstract class UI {
         if (e.changedTouches.length > 0) {
             const t = e.changedTouches[0];
             const pos = this.getMousePos(t.clientX, t.clientY);
-
-            // 🎯 스와이프 감지 시 접힘 모션 차단
-            if (this.touchPoint !== null) {
-                const dx = Math.abs(this.touchPoint.point.x - pos.x);
-                const dy = Math.abs(this.touchPoint.point.y - pos.y);
-
-                if (dx > this.swipeDistance / 2 && dy < this.swipeDistance) {
-                    this.isSwipeInProgress = true; // 🎯 스와이프 진행 중으로 설정
-                    return; // 접힘 모션 차단
-                }
-            }
 
             if (this.app.getSettings().mobileScrollSupport) {
                 if (this.touchPoint !== null) {
