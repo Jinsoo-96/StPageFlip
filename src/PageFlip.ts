@@ -382,7 +382,7 @@ export class PageFlip extends EventObject {
         if (!this.isUserTouch && !isTouch && this.setting.showPageCorners) {
             this.flipController.showCorner(pos); // fold Page Corner
         } else if (this.isUserTouch) {
-            if (Helper.GetDistanceBetweenTwoPoint(this.mousePosition, pos) > 300) {
+            if (Helper.GetDistanceBetweenTwoPoint(this.mousePosition, pos) > 5) {
                 this.isUserMove = true;
                 this.flipController.fold(pos);
             }
