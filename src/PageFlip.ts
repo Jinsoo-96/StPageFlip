@@ -117,6 +117,15 @@ export class PageFlip extends EventObject {
         // safari fix
         setTimeout(() => {
             this.ui.update();
+
+            // 🎯 첫 페이지일 때만 애니메이션 없이 중앙에서 시작
+            if (
+                this.render.getOrientation() === Orientation.LANDSCAPE &&
+                this.getCurrentPageIndex() === 0
+            ) {
+                (this.ui as HTMLUI).setInitialCenterPosition();
+            }
+
             this.trigger('init', this, {
                 page: this.setting.startPage,
                 mode: this.render.getOrientation(),

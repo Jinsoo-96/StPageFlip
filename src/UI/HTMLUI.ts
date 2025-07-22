@@ -57,6 +57,15 @@ export class HTMLUI extends UI {
         this.app.getRender().update();
     }
 
+    /**
+     * 애니메이션 없이 바로 첫 페이지를 중앙에 위치시킴
+     */
+    public setInitialCenterPosition(): void {
+        const width = this.distElement.clientWidth;
+        this.distElement.style.transition = 'none'; // 애니메이션 제거
+        this.distElement.style.transform = `translateX(-${width / 4}px)`;
+    }
+
     public firstPageCenterWithAnimation(): void {
         const width = this.distElement.clientWidth;
         const animationTime = this.app.getSettings().flippingTime;
