@@ -12,7 +12,7 @@ export class HTMLUI extends UI {
         inBlock: HTMLElement,
         app: PageFlip,
         setting: FlipSetting,
-        items: NodeListOf<HTMLElement> | HTMLElement[]
+        items: NodeListOf<HTMLElement> | HTMLElement[],
     ) {
         super(inBlock, app, setting);
 
@@ -55,5 +55,25 @@ export class HTMLUI extends UI {
 
     public update(): void {
         this.app.getRender().update();
+    }
+
+    public firstPageCenterWithAnimation(): void {
+        const width = this.distElement.clientWidth;
+        const animationTime = this.app.getSettings().flippingTime;
+        this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
+        this.distElement.style.transform = `translateX(-${width / 4}px)`;
+    }
+
+    public firstPageEndCenterWithAnimation(): void {
+        const width = this.distElement.clientWidth;
+        const animationTime = this.app.getSettings().flippingTime;
+        this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
+        this.distElement.style.transform = `translateX(${width / 4}px)`;
+    }
+
+    public firstPageCenterReverseWithAnimation(): void {
+        const animationTime = this.app.getSettings().flippingTime;
+        this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
+        this.distElement.style.transform = `translateX(0px)`;
     }
 }

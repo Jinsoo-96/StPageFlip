@@ -265,13 +265,13 @@ export abstract class UI {
                         this.app.flipPrev(
                             this.touchPoint.point.y < this.app.getRender().getRect().height / 2
                                 ? FlipCorner.TOP
-                                : FlipCorner.BOTTOM
+                                : FlipCorner.BOTTOM,
                         );
                     } else {
                         this.app.flipNext(
                             this.touchPoint.point.y < this.app.getRender().getRect().height / 2
                                 ? FlipCorner.TOP
-                                : FlipCorner.BOTTOM
+                                : FlipCorner.BOTTOM,
                         );
                     }
                     isSwipe = true;
@@ -283,4 +283,10 @@ export abstract class UI {
             this.app.userStop(pos, isSwipe);
         }
     };
+    /**
+     * Center first page with animation
+     */
+    public firstPageCenterWithAnimation(): void {}
+    public firstPageEndCenterWithAnimation(): void {}
+    public firstPageCenterReverseWithAnimation(): void {}
 }

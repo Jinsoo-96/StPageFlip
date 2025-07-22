@@ -104,7 +104,7 @@ export class Flip {
         this.animateFlippingTo(
             { x: rect.pageWidth - topMargins, y: yStart },
             { x: -rect.pageWidth, y: yDest },
-            true
+            true,
         );
     }
 
@@ -161,7 +161,7 @@ export class Flip {
                 direction,
                 flipCorner,
                 rect.pageWidth.toString(10), // fix bug with type casting
-                rect.height.toString(10) // fix bug with type casting
+                rect.height.toString(10), // fix bug with type casting
             );
 
             return true;
@@ -206,7 +206,7 @@ export class Flip {
                 this.calc.getShadowStartPoint(),
                 this.calc.getShadowAngle(),
                 progress,
-                this.calc.getDirection()
+                this.calc.getDirection(),
             );
         }
     }
@@ -306,7 +306,7 @@ export class Flip {
                     { x: pageWidth - 1, y: yStart },
                     { x: pageWidth - fixedCornerSize, y: yDest },
                     false,
-                    false
+                    false,
                 );
             } else {
                 this.do(this.render.convertToPage(globalPos));
@@ -331,7 +331,7 @@ export class Flip {
         start: Point,
         dest: Point,
         isTurned: boolean,
-        needReset = true
+        needReset = true,
     ): void {
         const points = Helper.GetCordsFromTwoPoint(start, dest);
 
@@ -341,26 +341,43 @@ export class Flip {
 
         const duration = this.getAnimationDuration(points.length);
 
+        if (isTurned && this.app.getOrientation() === Orientation.LANDSCAPE) {
+            if (this.calc.getDirection() === FlipDirection.BACK) {
+                if (this.app.getCurrentPageIndex() === 1) {
+                    this.app.getUI().firstPageCenterWithAnimation();
+                } else if (this.app.getCurrentPageIndex() === this.app.getPageCount() - 1) {
+                    this.app.getUI().firstPageCenterReverseWithAnimation();
+                }
+            } else {
+                if (this.app.getCurrentPageIndex() === 0) {
+                    this.app.getUI().firstPageCenterReverseWithAnimation();
+                } else if (this.app.getCurrentPageIndex() === this.app.getPageCount() - 3) {
+                    this.app.getUI().firstPageEndCenterWithAnimation();
+                }
+            }
+        }
+
         this.render.startAnimation(frames, duration, () => {
-            // callback function
+            // 🎯 콜백에서는 중앙 정렬 제거, 페이지 전환만
             if (!this.calc) return;
 
             if (isTurned) {
-                if (this.calc.getDirection() === FlipDirection.BACK) this.app.turnToPrevPage();
-                else this.app.turnToNextPage();
+                if (this.calc.getDirection() === FlipDirection.BACK) {
+                    this.app.turnToPrevPage();
+                } else {
+                    this.app.turnToNextPage();
+                }
             }
 
             if (needReset) {
                 this.render.setBottomPage(null);
                 this.render.setFlippingPage(null);
                 this.render.clearShadow();
-
                 this.setState(FlippingState.READ);
                 this.reset();
             }
         });
     }
-
     /**
      * Get the current calculations object
      */
@@ -436,7 +453,8 @@ export class Flip {
         const pageWidth = rect.pageWidth;
 
         const sensitivityDivider = this.app.getSettings().cornerSensitivity || 5;
-        const operatingDistance = Math.sqrt(Math.pow(pageWidth, 2) + Math.pow(rect.height, 2)) / sensitivityDivider;
+        const operatingDistance =
+            Math.sqrt(Math.pow(pageWidth, 2) + Math.pow(rect.height, 2)) / sensitivityDivider;
 
         const bookPos = this.render.convertToBook(globalPos);
 
