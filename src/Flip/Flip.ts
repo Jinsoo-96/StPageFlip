@@ -278,8 +278,6 @@ export class Flip {
      * Fold the corners of the book when the mouse pointer is over them.
      * Called when the mouse pointer is over the book without clicking
      *
-     * showCorner 메서드 수정 - HARD 페이지 처리 추가
-     *
      * @param globalPos
      */
     public showCorner(globalPos: Point): void {
@@ -290,150 +288,34 @@ export class Flip {
 
         if (this.isPointOnCorners(globalPos)) {
             if (this.calc === null) {
-                // 🎯 HARD 페이지 특별 처리 추가
-                if (!this.start(globalPos)) {
-                    this.showHardPageHoverOnly(globalPos);
-                    return;
-                }
+                if (!this.start(globalPos)) return;
 
                 this.setState(FlippingState.FOLD_CORNER);
-                // 🎯 기존: 즉시 계산하고 고정된 코너 크기로 애니메이션
-                // this.calc.calc({ x: pageWidth - 1, y: 1 });
 
-                // const fixedCornerSize = 50;
-                // const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
+                this.calc.calc({ x: pageWidth - 1, y: 1 });
 
-                // const yDest =
-                //     this.calc.getCorner() === FlipCorner.BOTTOM
-                //         ? rect.height - fixedCornerSize
-                //         : fixedCornerSize;
+                const fixedCornerSize = 50;
+                const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
 
-                // this.animateFlippingTo(
-                //     { x: pageWidth - 1, y: yStart },
-                //     { x: pageWidth - fixedCornerSize, y: yDest },
-                //     false,
-                //     false,
-                // );
+                const yDest =
+                    this.calc.getCorner() === FlipCorner.BOTTOM
+                        ? rect.height - fixedCornerSize
+                        : fixedCornerSize;
 
-                // 🎯 새로운 방식: 부드럽게 마우스 위치까지 애니메이션 /SOFT 페이지용 기존 애니메이션 개선
-                const startPos = {
-                    x: pageWidth - 1,
-                    y: this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1,
-                };
-
-                const targetPos = this.render.convertToPage(globalPos);
-
-                // 부드러운 애니메이션으로 마우스 위치까지 이동
-                this.animateToMousePosition(startPos, targetPos);
+                this.animateFlippingTo(
+                    { x: pageWidth - 1, y: yStart },
+                    { x: pageWidth - fixedCornerSize, y: yDest },
+                    false,
+                    false,
+                );
             } else {
-                // 이미 애니메이션이 시작된 상태에서는 실시간으로 마우스 따라가기
                 this.do(this.render.convertToPage(globalPos));
             }
         } else {
             this.setState(FlippingState.READ);
             this.render.finishAnimation();
+
             this.stopMove();
-            this.clearHardPageHover(); // 커버 호버 정리
-        }
-    }
-
-    // 🎯 새로 추가: SOFT 페이지용 부드러운 애니메이션
-    private animateToMousePosition(startPos: Point, targetPos: Point): void {
-        // 거리 계산
-        const distance = Math.sqrt(
-            Math.pow(targetPos.x - startPos.x, 2) + Math.pow(targetPos.y - startPos.y, 2),
-        );
-
-        // 일정한 속도 유지 (픽셀/ms)
-        const speed = 1.2;
-        const duration = Math.max(100, distance / speed);
-
-        // 애니메이션 프레임 생성
-        const frames = [];
-        const frameCount = Math.ceil(duration / 16);
-
-        for (let i = 0; i <= frameCount; i++) {
-            const progress = i / frameCount;
-            const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-            const currentPos = {
-                x: startPos.x + (targetPos.x - startPos.x) * easedProgress,
-                y: startPos.y + (targetPos.y - startPos.y) * easedProgress,
-            };
-
-            frames.push(() => this.do(currentPos));
-        }
-
-        this.render.startAnimation(frames, Math.round(duration), () => {
-            // 애니메이션 완료
-        });
-    }
-
-    // 🎯 새로 추가: HARD 페이지 호버 처리
-    private showHardPageHoverOnly(globalPos: Point): void {
-        const rect = this.getBoundsRect();
-        const bookPos = this.render.convertToBook(globalPos);
-        const currentIndex = this.app.getCurrentPageIndex();
-        const currentPage = this.app.getPage(currentIndex);
-
-        // HARD 페이지인지 확인
-        const isHardPage = currentPage && currentPage.getDensity() === PageDensity.HARD;
-        if (!isHardPage) return;
-
-        // 마우스 위치에 따른 들어올림 각도 계산 (0~15도)
-        const maxHoverAngle = 15;
-        const distanceFromEdge = Math.min(
-            Math.abs(bookPos.x - rect.width),
-            Math.abs(bookPos.x - rect.width / 2),
-        );
-        const normalizedDistance = Math.max(0, Math.min(1, distanceFromEdge / (rect.width / 4)));
-        const targetAngle = maxHoverAngle * (1 - normalizedDistance);
-
-        // 현재 각도에서 목표 각도까지 부드럽게 애니메이션
-        this.animateHardPageHover(currentPage, targetAngle);
-        this.setState(FlippingState.FOLD_CORNER);
-    }
-
-    // 🎯 새로 추가: HARD 페이지 각도 애니메이션
-    private animateHardPageHover(page: Page, targetAngle: number): void {
-        const currentAngle = page.getHardAngle();
-        const angleDifference = Math.abs(targetAngle - currentAngle);
-
-        // 무게감을 위해 느린 애니메이션 (1도당 20ms)
-        const duration = Math.max(200, angleDifference * 20);
-
-        const frames = [];
-        const frameCount = Math.ceil(duration / 16);
-
-        for (let i = 0; i <= frameCount; i++) {
-            const progress = i / frameCount;
-            // 무거운 느낌의 easing
-            const easedProgress = 1 - Math.pow(1 - progress, 4);
-
-            const currentFrameAngle = currentAngle + (targetAngle - currentAngle) * easedProgress;
-
-            frames.push(() => {
-                page.setHardAngle(currentFrameAngle);
-                this.render.setFlippingPage(page);
-            });
-        }
-
-        this.render.startAnimation(frames, Math.round(duration), () => {
-            // 애니메이션 완료
-        });
-    }
-
-    // 🎯 새로 추가: HARD 페이지 호버 정리
-    private clearHardPageHover(): void {
-        // flippingPage는 private이므로 직접 접근할 수 없어서
-        // 현재 렌더링 중인 페이지가 HARD인지 확인하는 다른 방법 사용
-        if (this.flippingPage && this.flippingPage.getDensity() === PageDensity.HARD) {
-            // HARD 페이지는 부드럽게 0도로 복원
-            this.animateHardPageHover(this.flippingPage, 0);
-        } else {
-            // SOFT 페이지는 즉시 정리 (기존 동작 유지)
-            this.render.setFlippingPage(null);
-            this.render.clearShadow();
         }
     }
 
