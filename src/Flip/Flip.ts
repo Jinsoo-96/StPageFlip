@@ -339,14 +339,9 @@ export class Flip {
             Math.pow(targetPos.x - startPos.x, 2) + Math.pow(targetPos.y - startPos.y, 2),
         );
 
-        // 거리에 따른 동적 애니메이션 시간 계산
-        // 기본: 150ms, 거리가 멀수록 최대 600ms까지 증가
-        const baseDuration = 150;
-        const maxDuration = 600;
-        const rect = this.getBoundsRect();
-        const maxDistance = Math.sqrt(Math.pow(rect.pageWidth, 2) + Math.pow(rect.height, 2));
-
-        const duration = baseDuration + (distance / maxDistance) * (maxDuration - baseDuration);
+        // 일정한 속도 유지 (픽셀/ms)
+        const speed = 1.2; // 1.2 픽셀 per millisecond
+        const duration = Math.max(100, distance / speed); // 최소 100ms
 
         // 애니메이션 프레임 생성
         const frames = [];
@@ -355,15 +350,8 @@ export class Flip {
         for (let i = 0; i <= frameCount; i++) {
             const progress = i / frameCount;
 
-            // 거리가 멀수록 더 부드러운 easing 적용
-            let easedProgress;
-            if (distance > maxDistance * 0.5) {
-                // 긴 거리: easeOutQuart (더 부드러운 감속)
-                easedProgress = 1 - Math.pow(1 - progress, 4);
-            } else {
-                // 짧은 거리: easeOutCubic (기본)
-                easedProgress = 1 - Math.pow(1 - progress, 3);
-            }
+            // 모든 거리에 동일한 부드러운 easing 적용
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
 
             const currentPos = {
                 x: startPos.x + (targetPos.x - startPos.x) * easedProgress,
@@ -376,7 +364,6 @@ export class Flip {
         // 애니메이션 실행
         this.render.startAnimation(frames, Math.round(duration), () => {
             // 애니메이션 완료 후 마우스 따라가기 모드로 전환
-            // 별도 처리 불필요 - showCorner가 지속적으로 호출됨
         });
     }
 
