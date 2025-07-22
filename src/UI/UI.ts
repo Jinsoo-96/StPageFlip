@@ -235,7 +235,7 @@ export abstract class UI {
 
     private onMouseMove = (e: MouseEvent): void => {
         // 🎯 제외 영역 체크 추가
-        if (!this.checkTarget(e.target)) {
+        if (this.app.getState() === FlippingState.READ && !this.checkTarget(e.target)) {
             return;
         }
 
@@ -249,7 +249,8 @@ export abstract class UI {
             const t = e.changedTouches[0];
 
             // 🎯 제외 영역 체크 추가
-            if (!this.checkTarget(e.target)) {
+            // 🎯 접힘 중이 아닐 때만 제외 영역 체크
+            if (this.app.getState() === FlippingState.READ && !this.checkTarget(e.target)) {
                 return;
             }
 
