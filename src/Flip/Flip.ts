@@ -326,7 +326,6 @@ export class Flip {
         } else {
             this.setState(FlippingState.READ);
             this.render.finishAnimation();
-
             this.stopMove();
         }
     }
@@ -335,15 +334,36 @@ export class Flip {
      * 🎯 새로 추가: 부드럽게 마우스 위치까지 애니메이션하는 메서드
      */
     private animateToMousePosition(startPos: Point, targetPos: Point): void {
-        // 애니메이션 프레임 생성 (부드러운 커브를 위해)
+        // 거리 계산
+        const distance = Math.sqrt(
+            Math.pow(targetPos.x - startPos.x, 2) + Math.pow(targetPos.y - startPos.y, 2),
+        );
+
+        // 거리에 따른 동적 애니메이션 시간 계산
+        // 기본: 150ms, 거리가 멀수록 최대 600ms까지 증가
+        const baseDuration = 150;
+        const maxDuration = 600;
+        const rect = this.getBoundsRect();
+        const maxDistance = Math.sqrt(Math.pow(rect.pageWidth, 2) + Math.pow(rect.height, 2));
+
+        const duration = baseDuration + (distance / maxDistance) * (maxDuration - baseDuration);
+
+        // 애니메이션 프레임 생성
         const frames = [];
-        const duration = 200; // 200ms 정도의 짧은 애니메이션
         const frameCount = Math.ceil(duration / 16); // 60fps 기준
 
         for (let i = 0; i <= frameCount; i++) {
             const progress = i / frameCount;
-            // easeOut 커브 적용으로 자연스러운 감속
-            const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+            // 거리가 멀수록 더 부드러운 easing 적용
+            let easedProgress;
+            if (distance > maxDistance * 0.5) {
+                // 긴 거리: easeOutQuart (더 부드러운 감속)
+                easedProgress = 1 - Math.pow(1 - progress, 4);
+            } else {
+                // 짧은 거리: easeOutCubic (기본)
+                easedProgress = 1 - Math.pow(1 - progress, 3);
+            }
 
             const currentPos = {
                 x: startPos.x + (targetPos.x - startPos.x) * easedProgress,
@@ -354,7 +374,7 @@ export class Flip {
         }
 
         // 애니메이션 실행
-        this.render.startAnimation(frames, duration, () => {
+        this.render.startAnimation(frames, Math.round(duration), () => {
             // 애니메이션 완료 후 마우스 따라가기 모드로 전환
             // 별도 처리 불필요 - showCorner가 지속적으로 호출됨
         });
