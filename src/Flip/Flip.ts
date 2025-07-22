@@ -291,24 +291,36 @@ export class Flip {
                 if (!this.start(globalPos)) return;
 
                 this.setState(FlippingState.FOLD_CORNER);
+                // 🎯 기존: 즉시 계산하고 고정된 코너 크기로 애니메이션
+                // this.calc.calc({ x: pageWidth - 1, y: 1 });
 
-                this.calc.calc({ x: pageWidth - 1, y: 1 });
+                // const fixedCornerSize = 50;
+                // const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
 
-                const fixedCornerSize = 50;
-                const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
+                // const yDest =
+                //     this.calc.getCorner() === FlipCorner.BOTTOM
+                //         ? rect.height - fixedCornerSize
+                //         : fixedCornerSize;
 
-                const yDest =
-                    this.calc.getCorner() === FlipCorner.BOTTOM
-                        ? rect.height - fixedCornerSize
-                        : fixedCornerSize;
+                // this.animateFlippingTo(
+                //     { x: pageWidth - 1, y: yStart },
+                //     { x: pageWidth - fixedCornerSize, y: yDest },
+                //     false,
+                //     false,
+                // );
 
-                this.animateFlippingTo(
-                    { x: pageWidth - 1, y: yStart },
-                    { x: pageWidth - fixedCornerSize, y: yDest },
-                    false,
-                    false,
-                );
+                // 🎯 새로운 방식: 부드럽게 마우스 위치까지 애니메이션
+                const startPos = {
+                    x: pageWidth - 1,
+                    y: this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1,
+                };
+
+                const targetPos = this.render.convertToPage(globalPos);
+
+                // 부드러운 애니메이션으로 마우스 위치까지 이동
+                this.animateToMousePosition(startPos, targetPos);
             } else {
+                // 이미 애니메이션이 시작된 상태에서는 실시간으로 마우스 따라가기
                 this.do(this.render.convertToPage(globalPos));
             }
         } else {
@@ -317,6 +329,35 @@ export class Flip {
 
             this.stopMove();
         }
+    }
+
+    /**
+     * 🎯 새로 추가: 부드럽게 마우스 위치까지 애니메이션하는 메서드
+     */
+    private animateToMousePosition(startPos: Point, targetPos: Point): void {
+        // 애니메이션 프레임 생성 (부드러운 커브를 위해)
+        const frames = [];
+        const duration = 200; // 200ms 정도의 짧은 애니메이션
+        const frameCount = Math.ceil(duration / 16); // 60fps 기준
+
+        for (let i = 0; i <= frameCount; i++) {
+            const progress = i / frameCount;
+            // easeOut 커브 적용으로 자연스러운 감속
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+            const currentPos = {
+                x: startPos.x + (targetPos.x - startPos.x) * easedProgress,
+                y: startPos.y + (targetPos.y - startPos.y) * easedProgress,
+            };
+
+            frames.push(() => this.do(currentPos));
+        }
+
+        // 애니메이션 실행
+        this.render.startAnimation(frames, duration, () => {
+            // 애니메이션 완료 후 마우스 따라가기 모드로 전환
+            // 별도 처리 불필요 - showCorner가 지속적으로 호출됨
+        });
     }
 
     /**
