@@ -209,7 +209,7 @@ export class PageFlip extends EventObject {
      *
      * @param {FlipCorner} corner - Active page corner when turning
      */
-    public flipNext(corner: FlipCorner = FlipCorner.TOP): void {
+    public flipNext(corner: FlipCorner = FlipCorner.BOTTOM): void {
         this.flipController.flipNext(corner);
     }
 
@@ -218,7 +218,7 @@ export class PageFlip extends EventObject {
      *
      * @param {FlipCorner} corner - Active page corner when turning
      */
-    public flipPrev(corner: FlipCorner = FlipCorner.TOP): void {
+    public flipPrev(corner: FlipCorner = FlipCorner.BOTTOM): void {
         this.flipController.flipPrev(corner);
     }
 
@@ -228,7 +228,7 @@ export class PageFlip extends EventObject {
      * @param {number} page - New page number
      * @param {FlipCorner} corner - Active page corner when turning
      */
-    public flip(page: number, corner: FlipCorner = FlipCorner.TOP): void {
+    public flip(page: number, corner: FlipCorner = FlipCorner.BOTTOM): void {
         this.flipController.flipToPage(page, corner);
     }
 
