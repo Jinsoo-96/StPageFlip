@@ -60,6 +60,9 @@ export interface FlipSetting {
 
     /** 코너 호버 민감도 변수 : 디폴트 = 5 더 민감하게 숫자를 더 작게, 덜 민감하게 숫자를 더 크게 */
     cornerSensitivity?: number;
+
+    // 🎯 새로 추가할 옵션
+    swipeExcludeSelectors?: string[]; // 스와이프 제외할 CSS 선택자 배열
 }
 
 export class Settings {
@@ -86,6 +89,7 @@ export class Settings {
         showPageCorners: true,
         disableFlipByClick: false,
         cornerSensitivity: 5, // Default sensitivity for corner hover
+        swipeExcludeSelectors: [], // Default empty array for swipe exclusion selectors
     };
 
     /**

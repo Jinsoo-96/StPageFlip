@@ -166,11 +166,29 @@ export abstract class UI {
         };
     }
 
-    private checkTarget(targer: EventTarget): boolean {
+    private checkTarget(target: EventTarget): boolean {
         if (!this.app.getSettings().clickEventForward) return true;
 
-        if (['a', 'button'].includes((targer as HTMLElement).tagName.toLowerCase())) {
+        const element = target as HTMLElement;
+        const settings = this.app.getSettings();
+
+        // 기본 제외 태그
+        if (['a', 'button'].includes(element.tagName.toLowerCase())) {
             return false;
+        }
+
+        // 🎯 사용자 정의 제외 영역
+        if (settings.swipeExcludeSelectors && settings.swipeExcludeSelectors.length > 0) {
+            for (const selector of settings.swipeExcludeSelectors) {
+                try {
+                    if (element.matches(selector) || element.closest(selector)) {
+                        return false;
+                    }
+                } catch (e) {
+                    // 잘못된 CSS 선택자인 경우 무시
+                    console.warn(`Invalid CSS selector: ${selector}`);
+                }
+            }
         }
 
         return true;
@@ -216,6 +234,11 @@ export abstract class UI {
     };
 
     private onMouseMove = (e: MouseEvent): void => {
+        // 🎯 제외 영역 체크 추가
+        if (!this.checkTarget(e.target)) {
+            return;
+        }
+
         const pos = this.getMousePos(e.clientX, e.clientY);
 
         this.app.userMove(pos, false);
@@ -224,6 +247,12 @@ export abstract class UI {
     private onTouchMove = (e: TouchEvent): void => {
         if (e.changedTouches.length > 0) {
             const t = e.changedTouches[0];
+
+            // 🎯 제외 영역 체크 추가
+            if (!this.checkTarget(e.target)) {
+                return;
+            }
+
             const pos = this.getMousePos(t.clientX, t.clientY);
 
             if (this.app.getSettings().mobileScrollSupport) {
@@ -249,6 +278,13 @@ export abstract class UI {
         if (e.changedTouches.length > 0) {
             const t = e.changedTouches[0];
             const pos = this.getMousePos(t.clientX, t.clientY);
+
+            // 🎯 제외 영역에서는 스와이프 비활성화
+            if (!this.checkTarget(e.target)) {
+                this.touchPoint = null;
+                return;
+            }
+
             let isSwipe = false;
 
             // swipe detection
