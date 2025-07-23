@@ -15,13 +15,6 @@ export class HTMLPage extends Page {
 
     private isLoad = false;
 
-    private previousHardAngle: number = 0;
-    private targetHardAngle: number = 0;
-    private isAnimatingHardAngle: boolean = false;
-    private hardAngleAnimationId: number | null = null;
-    private hardAngleStartTime: number = 0;
-    private hardAngleStartAngle: number = 0;
-
     constructor(render: Render, element: HTMLElement, density: PageDensity) {
         super(render, density);
 
@@ -54,9 +47,6 @@ export class HTMLPage extends Page {
     }
 
     public hideTemporaryCopy(): void {
-        // 🎯 1. 기존 hideTemporaryCopy 메서드 수정 (이 줄만 추가)
-        this.stopHardAngleAnimation();
-
         if (this.temporaryCopy !== null) {
             this.copiedElement.remove();
             this.copiedElement = null;
@@ -182,87 +172,5 @@ export class HTMLPage extends Page {
         this.element.classList.add('--' + density);
 
         super.setDrawingDensity(density);
-    }
-
-    // 🎯 2. 여기부터 새로운 메서드들 추가 (기존 마지막 메서드 다음에)
-    public setHardDrawingAngle(angle: number): void {
-        const coverDuration = this.render.getSettings().coverDuration || 0;
-
-        if (coverDuration === 0) {
-            super.setHardDrawingAngle(angle);
-            this.previousHardAngle = angle;
-            return;
-        }
-
-        if (this.nowDrawingDensity === PageDensity.HARD) {
-            if (!this.isAnimatingHardAngle) {
-                this.startProgressiveHardAngleAnimation(this.previousHardAngle, angle);
-            } else {
-                this.targetHardAngle = angle;
-            }
-        } else {
-            super.setHardDrawingAngle(angle);
-            this.previousHardAngle = angle;
-        }
-    }
-
-    private startProgressiveHardAngleAnimation(startAngle: number, targetAngle: number): void {
-        if (this.hardAngleAnimationId) {
-            cancelAnimationFrame(this.hardAngleAnimationId);
-        }
-
-        this.isAnimatingHardAngle = true;
-        this.hardAngleStartTime = performance.now();
-        this.hardAngleStartAngle = startAngle;
-        this.targetHardAngle = targetAngle;
-
-        this.animateHardAngleStep();
-    }
-
-    private animateHardAngleStep = (): void => {
-        const currentTime = performance.now();
-        const elapsed = currentTime - this.hardAngleStartTime;
-
-        const duration = this.render.getSettings().coverDuration || 0;
-
-        if (duration === 0 || elapsed >= duration) {
-            super.setHardDrawingAngle(this.targetHardAngle);
-            this.previousHardAngle = this.targetHardAngle;
-            this.isAnimatingHardAngle = false;
-            this.hardAngleAnimationId = null;
-            this.redraw();
-            return;
-        }
-
-        const progress = elapsed / duration;
-        const easedProgress = this.easeOut(progress);
-
-        const currentAngle =
-            this.hardAngleStartAngle +
-            (this.targetHardAngle - this.hardAngleStartAngle) * easedProgress;
-
-        super.setHardDrawingAngle(currentAngle);
-        this.previousHardAngle = currentAngle;
-        this.redraw();
-
-        this.hardAngleAnimationId = requestAnimationFrame(this.animateHardAngleStep);
-    };
-
-    private easeOut(t: number): number {
-        return 1 - Math.pow(1 - t, 3);
-    }
-
-    private redraw(): void {
-        if (this.nowDrawingDensity === PageDensity.HARD) {
-            this.draw();
-        }
-    }
-
-    public stopHardAngleAnimation(): void {
-        if (this.hardAngleAnimationId) {
-            cancelAnimationFrame(this.hardAngleAnimationId);
-            this.hardAngleAnimationId = null;
-            this.isAnimatingHardAngle = false;
-        }
     }
 }
