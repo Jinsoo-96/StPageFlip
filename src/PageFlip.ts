@@ -11,7 +11,7 @@ import { Helper } from './Helper';
 import { Page } from './Page/Page';
 import { EventObject } from './Event/EventObject';
 import { HTMLRender } from './Render/HTMLRender';
-import { FlipSetting, Settings } from './Settings';
+import { FlipSetting, Settings, SizeType } from './Settings';
 import { UI } from './UI/UI';
 
 import './Style/stPageFlip.css';
@@ -406,3 +406,5 @@ export class PageFlip extends EventObject {
         }
     }
 }
+
+export { SizeType } from './Settings';
