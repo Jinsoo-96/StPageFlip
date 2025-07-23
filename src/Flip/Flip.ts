@@ -52,24 +52,6 @@ export class Flip {
 
     private state: FlippingState = FlippingState.READ;
 
-    // 🎯 커버 애니메이션 관련 속성 추가
-    private coverAnimation: {
-        isActive: boolean;
-        isLifting: boolean;
-        startTime: number;
-        duration: number;
-        startProgress: number;
-        targetProgress: number;
-        animationId?: number;
-    } = {
-        isActive: false,
-        isLifting: false,
-        startTime: 0,
-        duration: 0,
-        startProgress: 0,
-        targetProgress: 0,
-    };
-
     constructor(render: Render, app: PageFlip) {
         this.render = render;
         this.app = app;
@@ -298,94 +280,43 @@ export class Flip {
      *
      * @param globalPos
      */
-    // 🎯 수정된 showCorner 메서드
     public showCorner(globalPos: Point): void {
         if (!this.checkState(FlippingState.READ, FlippingState.FOLD_CORNER)) return;
 
         const rect = this.getBoundsRect();
         const pageWidth = rect.pageWidth;
-        const coverDuration = this.app.getSettings().coverDuration || 0;
-        const isHard = this.isHardPage();
-        const hasCustomAnimation = coverDuration > 0 && isHard;
 
         if (this.isPointOnCorners(globalPos)) {
-            // === 코너에 마우스가 있을 때 ===
-            this.handleCornerHover(globalPos, rect, pageWidth, hasCustomAnimation, coverDuration);
-        } else {
-            // === 코너에서 마우스가 벗어났을 때 ===
-            this.handleCornerExit(hasCustomAnimation, coverDuration);
-        }
-    }
+            if (this.calc === null) {
+                if (!this.start(globalPos)) return;
 
-    // 🎯 코너 호버 처리
-    private handleCornerHover(
-        globalPos: Point,
-        rect: PageRect,
-        pageWidth: number,
-        hasCustomAnimation: boolean,
-        coverDuration: number,
-    ): void {
-        if (this.calc === null) {
-            // 새로운 호버 시작
-            if (!this.start(globalPos)) return;
-            this.setState(FlippingState.FOLD_CORNER);
+                this.setState(FlippingState.FOLD_CORNER);
 
-            if (hasCustomAnimation) {
-                // 하드 페이지 + 커스텀 애니메이션
-                this.startCoverAnimation(true, coverDuration);
+                this.calc.calc({ x: pageWidth - 1, y: 1 });
+
+                const fixedCornerSize = 50;
+                const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
+
+                const yDest =
+                    this.calc.getCorner() === FlipCorner.BOTTOM
+                        ? rect.height - fixedCornerSize
+                        : fixedCornerSize;
+
+                this.animateFlippingTo(
+                    { x: pageWidth - 1, y: yStart },
+                    { x: pageWidth - fixedCornerSize, y: yDest },
+                    false,
+                    false,
+                );
             } else {
-                // 기존 애니메이션 (소프트 또는 coverDuration = 0)
-                this.startOriginalCornerAnimation(rect, pageWidth);
-            }
-        } else {
-            // 이미 호버 중
-            if (!hasCustomAnimation) {
-                // 소프트 페이지만 마우스 따라가기
                 this.do(this.render.convertToPage(globalPos));
             }
-            // 하드 페이지는 애니메이션 중이면 아무것도 하지 않음
+        } else {
+            this.setState(FlippingState.READ);
+            this.render.finishAnimation();
+
+            this.stopMove();
         }
-    }
-
-    // 🎯 코너 벗어남 처리
-    private handleCornerExit(hasCustomAnimation: boolean, coverDuration: number): void {
-        if (hasCustomAnimation && this.shouldAnimateDown()) {
-            // 하드 페이지: 천천히 내리기
-            this.startCoverAnimation(false, coverDuration);
-        } else if (!hasCustomAnimation || !this.shouldAnimateDown()) {
-            // 소프트 페이지 또는 하드 페이지 (애니메이션 조건 안 맞을 때)
-            this.returnToOriginalState();
-        }
-    }
-
-    // 🎯 원래 코너 애니메이션 (기존 로직)
-    private startOriginalCornerAnimation(rect: PageRect, pageWidth: number): void {
-        this.calc.calc({ x: pageWidth - 1, y: 1 });
-        const fixedCornerSize = 50;
-        const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
-        const yDest =
-            this.calc.getCorner() === FlipCorner.BOTTOM
-                ? rect.height - fixedCornerSize
-                : fixedCornerSize;
-
-        this.animateFlippingTo(
-            { x: pageWidth - 1, y: yStart },
-            { x: pageWidth - fixedCornerSize, y: yDest },
-            false,
-            false,
-        );
-    }
-
-    // 🎯 내리기 애니메이션 조건 체크
-    private shouldAnimateDown(): boolean {
-        return this.coverAnimation.isActive || this.state === FlippingState.FOLD_CORNER;
-    }
-
-    // 🎯 원래 상태로 복귀
-    private returnToOriginalState(): void {
-        this.setState(FlippingState.READ);
-        this.render.finishAnimation();
-        this.stopMove();
     }
 
     /**
@@ -503,11 +434,6 @@ export class Flip {
         this.calc = null;
         this.flippingPage = null;
         this.bottomPage = null;
-
-        // 🎯 이 부분을 기존 reset 메서드에 추가
-        if (this.coverAnimation.animationId) {
-            cancelAnimationFrame(this.coverAnimation.animationId);
-        }
     }
 
     private getBoundsRect(): PageRect {
@@ -540,103 +466,5 @@ export class Flip {
             (bookPos.x < operatingDistance || bookPos.x > rect.width - operatingDistance) &&
             (bookPos.y < operatingDistance || bookPos.y > rect.height - operatingDistance)
         );
-    }
-    // 🎯 새로운 private 메서드들을 여기에 추가
-    private isHardPage(): boolean {
-        return this.flippingPage !== null && this.flippingPage.getDensity() === PageDensity.HARD;
-    }
-
-    private startCoverAnimation(isLifting: boolean, duration: number): void {
-        if (this.coverAnimation.animationId) {
-            cancelAnimationFrame(this.coverAnimation.animationId);
-        }
-
-        const currentProgress = this.getCurrentCoverProgress();
-
-        this.coverAnimation = {
-            isActive: true,
-            isLifting: isLifting,
-            startTime: performance.now(),
-            duration: duration,
-            startProgress: currentProgress,
-            targetProgress: isLifting ? 1 : 0,
-        };
-
-        this.runCoverAnimation();
-    }
-
-    private getCurrentCoverProgress(): number {
-        if (!this.coverAnimation.isActive) {
-            return 0;
-        }
-
-        const elapsed = performance.now() - this.coverAnimation.startTime;
-        const progress = Math.min(elapsed / this.coverAnimation.duration, 1);
-        const easedProgress = this.easeOut(progress);
-
-        return (
-            this.coverAnimation.startProgress +
-            (this.coverAnimation.targetProgress - this.coverAnimation.startProgress) * easedProgress
-        );
-    }
-
-    private runCoverAnimation(): void {
-        if (!this.coverAnimation.isActive) return;
-
-        const elapsed = performance.now() - this.coverAnimation.startTime;
-        const progress = Math.min(elapsed / this.coverAnimation.duration, 1);
-        const easedProgress = this.easeOut(progress);
-
-        const currentProgress =
-            this.coverAnimation.startProgress +
-            (this.coverAnimation.targetProgress - this.coverAnimation.startProgress) *
-                easedProgress;
-
-        this.updateCoverPosition(currentProgress);
-
-        if (progress < 1) {
-            this.coverAnimation.animationId = requestAnimationFrame(() => this.runCoverAnimation());
-        } else {
-            this.finishCoverAnimation();
-        }
-    }
-
-    private updateCoverPosition(progress: number): void {
-        if (!this.calc) return;
-
-        const rect = this.getBoundsRect();
-        const pageWidth = rect.pageWidth;
-        const fixedCornerSize = 50;
-
-        const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
-        const yEnd =
-            this.calc.getCorner() === FlipCorner.BOTTOM
-                ? rect.height - fixedCornerSize
-                : fixedCornerSize;
-
-        const currentY = yStart + (yEnd - yStart) * progress;
-        const currentX = pageWidth - 1 + (pageWidth - fixedCornerSize - (pageWidth - 1)) * progress;
-
-        this.do({ x: currentX, y: currentY });
-    }
-
-    private finishCoverAnimation(): void {
-        const wasLifting = this.coverAnimation.isLifting;
-
-        this.coverAnimation.isActive = false;
-        if (this.coverAnimation.animationId) {
-            cancelAnimationFrame(this.coverAnimation.animationId);
-            this.coverAnimation.animationId = undefined;
-        }
-
-        if (!wasLifting) {
-            this.setState(FlippingState.READ);
-            this.render.finishAnimation();
-            this.stopMove();
-        }
-    }
-
-    private easeOut(t: number): number {
-        return 1 - Math.pow(1 - t, 3);
     }
 }
