@@ -3,6 +3,7 @@
     "version": "2.3.0",
     "main": "dist/js/page-flip.browser.js",
     "browser": "dist/js/page-flip.browser.js",
+    "types": "dist/PageFlip.d.ts",
     "author": "oleg.litovski9@gmail.com",
     "license": "MIT",
     "description": "Powerful, simple and flexible JS Library for creating realistic and beautiful page turning effect",
