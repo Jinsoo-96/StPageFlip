@@ -295,7 +295,7 @@ export class Flip {
 
             // 현재 보이는 페이지가 hard이면 호버 비활성화
             if (currentPage && currentPage.getDensity() === PageDensity.HARD) {
-                this.setState(FlippingState.read);
+                this.setState(FlippingState.READ);
                 this.render.finishAnimation();
                 this.stopMove();
                 return;
@@ -310,14 +310,14 @@ export class Flip {
                     (flippingPage && flippingPage.getDensity() === PageDensity.HARD) ||
                     (bottomPage && bottomPage.getDensity() === PageDensity.HARD)
                 ) {
-                    this.setState(FlippingState.read);
+                    this.setState(FlippingState.READ);
                     this.render.finishAnimation();
                     this.stopMove();
                     return;
                 }
             } catch (e) {
                 // 페이지를 가져올 수 없으면 호버 비활성화
-                this.setState(FlippingState.read);
+                this.setState(FlippingState.READ);
                 this.render.finishAnimation();
                 this.stopMove();
                 return;
