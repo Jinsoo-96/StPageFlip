@@ -1,5 +1,6 @@
-node_modules/*
-dist/*
-.idea/*
-.vscode/*
+node_modules/
+dist/
+!.d.ts
+.idea/
+.vscode/
 package-lock.json
