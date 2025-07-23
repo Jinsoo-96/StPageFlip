@@ -77,24 +77,51 @@ export class HTMLPage extends Page {
             : this.drawSoft(pagePos, commonStyle);
     }
 
-    private drawHard(commonStyle = ''): void {
-        const pos = this.render.getRect().left + this.render.getRect().width / 2;
+    private calculateSmoothOpacity(progress: number): number {
+        // S-curve로 부드러운 페이드 효과
+        const smoothed = 3 * Math.pow(progress, 2) - 2 * Math.pow(progress, 3);
+        return Math.max(0.1, 1 - smoothed * 0.9); // 10%~100% 범위
+    }
 
+    private drawHard(commonStyle = ''): void {
+        const settings = this.render.getSettings();
+        const pos = this.render.getRect().left + this.render.getRect().width / 2;
         const angle = this.state.hardDrawingAngle;
+
+        // 🎯 hardPageTransition 값으로 부드러운 효과 여부 결정
+        const isSmoothEnabled = settings.hardPageTransition && settings.hardPageTransition > 0;
+
+        let additionalStyle = '';
+
+        if (isSmoothEnabled) {
+            const progress = Math.abs(angle) / 180;
+            const opacity = this.calculateSmoothOpacity(progress);
+
+            // 🎯 선택사항: 진행률에 따른 동적 전환 시간
+            const dynamicTransition = settings.hardPageTransition * (1 - progress * 0.5);
+
+            additionalStyle = `
+            opacity: ${opacity};
+            transition: opacity ${dynamicTransition}ms ease-out,
+                       transform ${dynamicTransition}ms ease-out;
+        `;
+        }
+        // else: 기존 극적인 효과 (additionalStyle = '')
 
         const newStyle =
             commonStyle +
+            additionalStyle +
             `
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-                clip-path: none;
-                -webkit-clip-path: none;
-            ` +
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            clip-path: none;
+            -webkit-clip-path: none;
+        ` +
             (this.orientation === PageOrientation.LEFT
                 ? `transform-origin: ${this.render.getRect().pageWidth}px 0; 
-                   transform: translate3d(0, 0, 0) rotateY(${angle}deg);`
+               transform: translate3d(0, 0, 0) rotateY(${angle}deg);`
                 : `transform-origin: 0 0; 
-                   transform: translate3d(${pos}px, 0, 0) rotateY(${angle}deg);`);
+               transform: translate3d(${pos}px, 0, 0) rotateY(${angle}deg);`);
 
         this.element.style.cssText = newStyle;
     }
