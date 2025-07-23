@@ -61,14 +61,6 @@ export interface FlipSetting {
     /** 코너 호버 민감도 변수 : 디폴트 = 5 더 민감하게 숫자를 더 작게, 덜 민감하게 숫자를 더 크게 */
     cornerSensitivity?: number;
 
-    /**
-     * 하드 페이지 부드러운 전환 지속시간 (ms)
-     * 0 또는 undefined = 기존 극적인 효과 (즉시 반응)
-     * 숫자 > 0 = 부드러운 페이드 효과 활성화
-     * 권장값: 100-300ms
-     */
-    hardPageTransition?: number;
-
     // 🎯 새로 추가할 옵션
     swipeExcludeSelectors?: string[]; // 스와이프 제외할 CSS 선택자 배열
 }
@@ -97,7 +89,6 @@ export class Settings {
         showPageCorners: true,
         disableFlipByClick: false,
         cornerSensitivity: 5, // Default sensitivity for corner hover
-        hardPageTransition: 0, // 🎯 기본값: 기존 동작 (즉시 반응)
         swipeExcludeSelectors: [], // Default empty array for swipe exclusion selectors
     };
 
