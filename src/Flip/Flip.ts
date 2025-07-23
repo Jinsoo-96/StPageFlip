@@ -341,9 +341,13 @@ export class Flip {
             }
         } else {
             // 🎯 코너에서 벗어남
-            if (coverDuration > 0 && this.isHardPage() && this.coverAnimation.isActive) {
-                // 애니메이션 중이었다면 즉시 내리기 시작
-                this.startCoverAnimation(false, coverDuration); // 내리기
+            if (
+                coverDuration > 0 &&
+                this.isHardPage() &&
+                (this.coverAnimation.isActive || this.state === FlippingState.FOLD_CORNER)
+            ) {
+                // 🔥 애니메이션 중이거나 FOLD_CORNER 상태면 천천히 내리기
+                this.startCoverAnimation(false, coverDuration);
             } else {
                 // 기존 로직
                 this.setState(FlippingState.READ);
