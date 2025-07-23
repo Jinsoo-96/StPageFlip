@@ -341,13 +341,11 @@ export class Flip {
             }
         } else {
             // 🎯 코너에서 벗어남
-            if (
-                coverDuration > 0 &&
-                this.isHardPage() &&
-                (this.coverAnimation.isActive || this.state === FlippingState.FOLD_CORNER)
-            ) {
-                // 🔥 애니메이션 중이거나 FOLD_CORNER 상태면 천천히 내리기
-                this.startCoverAnimation(false, coverDuration);
+            if (coverDuration > 0 && this.isHardPage()) {
+                // 🔥 애니메이션 중이거나 OR 완전히 들어올려진 상태 모두 체크
+                if (this.coverAnimation.isActive || this.isCoverFullyLifted()) {
+                    this.startCoverAnimation(false, coverDuration); // 천천히 내리기
+                }
             } else {
                 // 기존 로직
                 this.setState(FlippingState.READ);
@@ -607,5 +605,11 @@ export class Flip {
 
     private easeOut(t: number): number {
         return 1 - Math.pow(1 - t, 3);
+    }
+
+    // 🎯 새로운 메서드: 커버가 완전히 들어올려진 상태인지 체크
+    private isCoverFullyLifted(): boolean {
+        // FOLD_CORNER 상태이고 calc가 있으면 커버가 들어올려진 상태
+        return this.state === FlippingState.FOLD_CORNER && this.calc !== null;
     }
 }
