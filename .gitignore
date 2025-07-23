@@ -1,6 +1,7 @@
 node_modules/
+# dist 폴더는 무시하지만, 그 안에 있는 .d.ts 파일들은 예외로 포함
 dist/
-!.d.ts
-.idea/
-.vscode/
+!dist/*.d.ts # dist 폴더 내의 모든 .d.ts 파일을 포함시킵니다.
+!.idea/
+!.vscode/
 package-lock.json
