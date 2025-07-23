@@ -305,54 +305,87 @@ export class Flip {
         const rect = this.getBoundsRect();
         const pageWidth = rect.pageWidth;
         const coverDuration = this.app.getSettings().coverDuration || 0;
+        const isHard = this.isHardPage();
+        const hasCustomAnimation = coverDuration > 0 && isHard;
 
         if (this.isPointOnCorners(globalPos)) {
-            if (this.calc === null) {
-                if (!this.start(globalPos)) return;
-                this.setState(FlippingState.FOLD_CORNER);
+            // === 코너에 마우스가 있을 때 ===
+            this.handleCornerHover(globalPos, rect, pageWidth, hasCustomAnimation, coverDuration);
+        } else {
+            // === 코너에서 마우스가 벗어났을 때 ===
+            this.handleCornerExit(hasCustomAnimation, coverDuration);
+        }
+    }
 
-                // 🎯 하드 페이지 + coverDuration 설정이 있는 경우
-                if (coverDuration > 0 && this.isHardPage()) {
-                    this.startCoverAnimation(true, coverDuration); // 들어올리기
-                } else {
-                    // 🎯 기존 로직 (소프트 페이지 또는 coverDuration = 0)
-                    this.calc.calc({ x: pageWidth - 1, y: 1 });
-                    const fixedCornerSize = 50;
-                    const yStart =
-                        this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
-                    const yDest =
-                        this.calc.getCorner() === FlipCorner.BOTTOM
-                            ? rect.height - fixedCornerSize
-                            : fixedCornerSize;
+    // 🎯 코너 호버 처리
+    private handleCornerHover(
+        globalPos: Point,
+        rect: PageRect,
+        pageWidth: number,
+        hasCustomAnimation: boolean,
+        coverDuration: number,
+    ): void {
+        if (this.calc === null) {
+            // 새로운 호버 시작
+            if (!this.start(globalPos)) return;
+            this.setState(FlippingState.FOLD_CORNER);
 
-                    this.animateFlippingTo(
-                        { x: pageWidth - 1, y: yStart },
-                        { x: pageWidth - fixedCornerSize, y: yDest },
-                        false,
-                        false,
-                    );
-                }
+            if (hasCustomAnimation) {
+                // 하드 페이지 + 커스텀 애니메이션
+                this.startCoverAnimation(true, coverDuration);
             } else {
-                // 🎯 소프트 페이지는 기존 로직 그대로
-                if (!this.isHardPage()) {
-                    this.do(this.render.convertToPage(globalPos));
-                }
-                // 하드 페이지는 애니메이션 중이면 아무것도 하지 않음
+                // 기존 애니메이션 (소프트 또는 coverDuration = 0)
+                this.startOriginalCornerAnimation(rect, pageWidth);
             }
         } else {
-            // 🎯 코너에서 벗어남
-            if (coverDuration > 0 && this.isHardPage()) {
-                // 🔥 애니메이션 중이거나 OR 완전히 들어올려진 상태 모두 체크
-                if (this.coverAnimation.isActive || this.isCoverFullyLifted()) {
-                    this.startCoverAnimation(false, coverDuration); // 천천히 내리기
-                }
-            } else {
-                // 기존 로직
-                this.setState(FlippingState.READ);
-                this.render.finishAnimation();
-                this.stopMove();
+            // 이미 호버 중
+            if (!hasCustomAnimation) {
+                // 소프트 페이지만 마우스 따라가기
+                this.do(this.render.convertToPage(globalPos));
             }
+            // 하드 페이지는 애니메이션 중이면 아무것도 하지 않음
         }
+    }
+
+    // 🎯 코너 벗어남 처리
+    private handleCornerExit(hasCustomAnimation: boolean, coverDuration: number): void {
+        if (hasCustomAnimation && this.shouldAnimateDown()) {
+            // 하드 페이지: 천천히 내리기
+            this.startCoverAnimation(false, coverDuration);
+        } else if (!hasCustomAnimation || !this.shouldAnimateDown()) {
+            // 소프트 페이지 또는 하드 페이지 (애니메이션 조건 안 맞을 때)
+            this.returnToOriginalState();
+        }
+    }
+
+    // 🎯 원래 코너 애니메이션 (기존 로직)
+    private startOriginalCornerAnimation(rect: PageRect, pageWidth: number): void {
+        this.calc.calc({ x: pageWidth - 1, y: 1 });
+        const fixedCornerSize = 50;
+        const yStart = this.calc.getCorner() === FlipCorner.BOTTOM ? rect.height - 1 : 1;
+        const yDest =
+            this.calc.getCorner() === FlipCorner.BOTTOM
+                ? rect.height - fixedCornerSize
+                : fixedCornerSize;
+
+        this.animateFlippingTo(
+            { x: pageWidth - 1, y: yStart },
+            { x: pageWidth - fixedCornerSize, y: yDest },
+            false,
+            false,
+        );
+    }
+
+    // 🎯 내리기 애니메이션 조건 체크
+    private shouldAnimateDown(): boolean {
+        return this.coverAnimation.isActive || this.state === FlippingState.FOLD_CORNER;
+    }
+
+    // 🎯 원래 상태로 복귀
+    private returnToOriginalState(): void {
+        this.setState(FlippingState.READ);
+        this.render.finishAnimation();
+        this.stopMove();
     }
 
     /**
@@ -605,11 +638,5 @@ export class Flip {
 
     private easeOut(t: number): number {
         return 1 - Math.pow(1 - t, 3);
-    }
-
-    // 🎯 새로운 메서드: 커버가 완전히 들어올려진 상태인지 체크
-    private isCoverFullyLifted(): boolean {
-        // FOLD_CORNER 상태이고 calc가 있으면 커버가 들어올려진 상태
-        return this.state === FlippingState.FOLD_CORNER && this.calc !== null;
     }
 }
