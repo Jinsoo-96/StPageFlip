@@ -285,27 +285,39 @@ export class Flip {
 
         // 🎯 hard 페이지 호버 설정 확인
         if (!this.app.getSettings().hardPageHover) {
-            // hardPageHover가 false일 때 현재 페이지나 다음 페이지가 hard인지 확인
+            // hardPageHover가 false일 때 현재 보이는 페이지와 넘길 페이지들이 hard인지 확인
             const bookPos = this.render.convertToBook(globalPos);
             const direction = this.getDirectionByPoint(bookPos);
+
+            // 현재 보이는 페이지들 확인
+            const currentPageIndex = this.app.getCurrentPageIndex();
+            const currentPage = this.app.getPage(currentPageIndex);
+
+            // 현재 보이는 페이지가 hard이면 호버 비활성화
+            if (currentPage && currentPage.getDensity() === PageDensity.HARD) {
+                this.setState(FlippingState.read);
+                this.render.finishAnimation();
+                this.stopMove();
+                return;
+            }
 
             try {
                 const flippingPage = this.app.getPageCollection().getFlippingPage(direction);
                 const bottomPage = this.app.getPageCollection().getBottomPage(direction);
 
-                // 현재 페이지나 다음 페이지가 hard이면 코너 호버 비활성화
+                // 넘길 페이지나 다음 페이지가 hard이면 코너 호버 비활성화
                 if (
                     (flippingPage && flippingPage.getDensity() === PageDensity.HARD) ||
                     (bottomPage && bottomPage.getDensity() === PageDensity.HARD)
                 ) {
-                    this.setState(FlippingState.READ);
+                    this.setState(FlippingState.read);
                     this.render.finishAnimation();
                     this.stopMove();
                     return;
                 }
             } catch (e) {
                 // 페이지를 가져올 수 없으면 호버 비활성화
-                this.setState(FlippingState.READ);
+                this.setState(FlippingState.read);
                 this.render.finishAnimation();
                 this.stopMove();
                 return;
