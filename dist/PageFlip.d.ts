@@ -206,3 +206,4 @@ export declare class PageFlip extends EventObject {
     userStop(pos: Point, isSwipe?: boolean): void;
 }
 export { SizeType } from './Settings';
+export { type FlipSetting } from './Settings';
