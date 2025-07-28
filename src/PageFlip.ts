@@ -408,3 +408,4 @@ export class PageFlip extends EventObject {
 }
 
 export { SizeType } from './Settings';
+export { type FlipSetting } from './Settings';
