@@ -131,6 +131,7 @@ export class Flip {
 
         try {
             this.flippingPage = this.app.getPageCollection().getFlippingPage(direction);
+            this.render.setFlippingPage(this.flippingPage);
             this.bottomPage = this.app.getPageCollection().getBottomPage(direction);
 
             // In landscape mode, needed to set the density  of the next page to the same as that of the flipped
