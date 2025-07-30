@@ -49,11 +49,11 @@ export class HTMLRender extends Render {
         // 3. Shadow DOM 요소들 제거
         this.removeShadowElements();
 
-        // // 4. 참조 초기화
-        // this.outerShadow = null;
-        // this.innerShadow = null;
-        // this.hardShadow = null;
-        // this.hardInnerShadow = null;
+        // 4. 참조 초기화
+        this.outerShadow = null;
+        this.innerShadow = null;
+        this.hardShadow = null;
+        this.hardInnerShadow = null;
     }
 
     /**
