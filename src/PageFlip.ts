@@ -29,6 +29,8 @@ export class PageFlip extends EventObject {
     private setting: FlipSetting = null;
     private readonly block: HTMLElement; // Root HTML Element
 
+    private items: NodeListOf<HTMLElement> | HTMLElement[] = null;
+
     private pages: PageCollection = null;
     private flipController: Flip;
     private render: Render;
@@ -101,6 +103,8 @@ export class PageFlip extends EventObject {
      * @param {(NodeListOf<HTMLElement>|HTMLElement[])} items - List of pages as HTML Element
      */
     public loadFromHTML(items: NodeListOf<HTMLElement> | HTMLElement[]): void {
+        this.items = items;
+
         this.ui = new HTMLUI(this.block, this, this.setting, items);
 
         this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
@@ -407,6 +411,14 @@ export class PageFlip extends EventObject {
     }
 
     public updateFromUI(): void {
+        this.ui.destroy();
+        this.render.destroy();
+
+        this.ui = new HTMLUI(this.block, this, this.setting, this.items);
+
+        this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
+        this.flipController = new Flip(this.render, this);
+
         // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
         setTimeout(() => {
             this.ui.update();

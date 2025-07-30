@@ -36,13 +36,63 @@ export class HTMLRender extends Render {
         this.createShadows();
     }
 
+    /**
+     * Clean up HTMLRender resources and remove DOM elements
+     */
+    public destroy(): void {
+        // 1. 애니메이션 중지 (부모 클래스)
+        this.finishAnimation();
+
+        // 2. 그림자 초기화 (부모 클래스)
+        this.clearShadow();
+
+        // 3. Shadow DOM 요소들 제거
+        this.removeShadowElements();
+
+        // 4. 참조 초기화
+        this.outerShadow = null;
+        this.innerShadow = null;
+        this.hardShadow = null;
+        this.hardInnerShadow = null;
+    }
+
+    /**
+     * Remove all shadow DOM elements from parent element
+     */
+    private removeShadowElements(): void {
+        // CSS 선택자로 모든 shadow 요소 찾아서 제거 (가장 안전한 방법)
+        const shadowSelectors = [
+            '.stf__outerShadow',
+            '.stf__innerShadow',
+            '.stf__hardShadow',
+            '.stf__hardInnerShadow',
+        ];
+
+        shadowSelectors.forEach((selector) => {
+            const elements = this.element.querySelectorAll(selector);
+            elements.forEach((el) => el.remove());
+        });
+
+        // 또는 개별 참조로 제거 (백업 방법)
+        [this.outerShadow, this.innerShadow, this.hardShadow, this.hardInnerShadow].forEach(
+            (shadow) => {
+                if (shadow && shadow.parentNode) {
+                    shadow.remove();
+                }
+            },
+        );
+    }
+
     private createShadows(): void {
+        // 🎯 기존 shadow 요소들이 있다면 먼저 제거 (중복 방지)
+        this.removeShadowElements();
+
         this.element.insertAdjacentHTML(
             'beforeend',
             `<div class="stf__outerShadow"></div>
              <div class="stf__innerShadow"></div>
              <div class="stf__hardShadow"></div>
-             <div class="stf__hardInnerShadow"></div>`
+             <div class="stf__hardInnerShadow"></div>`,
         );
 
         this.outerShadow = this.element.querySelector('.stf__outerShadow');
@@ -189,8 +239,8 @@ export class HTMLRender extends Render {
                 rgba(0, 0, 0, 0) 100%);
             transform-origin: ${shadowTranslate}px 100px;
             transform: translate3d(${shadowPos.x - shadowTranslate}px, ${
-            shadowPos.y - 100
-        }px, 0) rotate(${angle}rad);
+                shadowPos.y - 100
+            }px, 0) rotate(${angle}rad);
             clip-path: ${polygon};
             -webkit-clip-path: ${polygon};
         `;
@@ -248,12 +298,12 @@ export class HTMLRender extends Render {
             width: ${this.shadow.width}px;
             height: ${rect.height * 2}px;
             background: linear-gradient(${shadowDirection}, rgba(0, 0, 0, ${
-            this.shadow.opacity
-        }), rgba(0, 0, 0, 0));
+                this.shadow.opacity
+            }), rgba(0, 0, 0, 0));
             transform-origin: ${shadowTranslate}px 100px;
             transform: translate3d(${shadowPos.x - shadowTranslate}px, ${
-            shadowPos.y - 100
-        }px, 0) rotate(${angle}rad);
+                shadowPos.y - 100
+            }px, 0) rotate(${angle}rad);
             clip-path: ${polygon};
             -webkit-clip-path: ${polygon};
         `;

@@ -18,6 +18,7 @@ export declare class PageFlip extends EventObject {
     private isUserMove;
     private setting;
     private readonly block;
+    private items;
     private pages;
     private flipController;
     private render;

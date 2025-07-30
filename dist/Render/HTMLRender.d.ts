@@ -21,6 +21,14 @@ export declare class HTMLRender extends Render {
      * @param {HTMLElement} element - Parent HTML Element
      */
     constructor(app: PageFlip, setting: FlipSetting, element: HTMLElement);
+    /**
+     * Clean up HTMLRender resources and remove DOM elements
+     */
+    destroy(): void;
+    /**
+     * Remove all shadow DOM elements from parent element
+     */
+    private removeShadowElements;
     private createShadows;
     clearShadow(): void;
     reload(): void;
