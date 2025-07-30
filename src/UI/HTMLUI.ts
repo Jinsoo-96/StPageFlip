@@ -66,21 +66,21 @@ export class HTMLUI extends UI {
         this.distElement.style.transform = `translateX(-${width / 4}px)`;
     }
 
-    public firstPageCenterWithAnimation(): void {
+    public firstPageCenter(): void {
         const width = this.distElement.clientWidth;
         const animationTime = this.app.getSettings().flippingTime;
         this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
         this.distElement.style.transform = `translateX(-${width / 4}px)`;
     }
 
-    public firstPageEndCenterWithAnimation(): void {
+    public firstPageEndCenter(): void {
         const width = this.distElement.clientWidth;
         const animationTime = this.app.getSettings().flippingTime;
         this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
         this.distElement.style.transform = `translateX(${width / 4}px)`;
     }
 
-    public firstPageCenterReverseWithAnimation(): void {
+    public firstPageCenterReverse(): void {
         const animationTime = this.app.getSettings().flippingTime;
         this.distElement.style.transition = `transform ${animationTime}ms ease-out`;
         this.distElement.style.transform = `translateX(0px)`;

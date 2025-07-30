@@ -26,7 +26,7 @@ export class PageFlip extends EventObject {
     private isUserTouch = false;
     private isUserMove = false;
 
-    private readonly setting: FlipSetting = null;
+    private setting: FlipSetting = null;
     private readonly block: HTMLElement; // Root HTML Element
 
     private pages: PageCollection = null;
@@ -404,6 +404,46 @@ export class PageFlip extends EventObject {
                 else this.flipController.stopMove();
             }
         }
+    }
+
+    public updateFromUI(): void {
+        // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
+        setTimeout(() => {
+            this.ui.update();
+            this.render.update();
+
+            // 🎯 현재 페이지 다시 표시 (설정 변경에 따른 레이아웃 적용)
+            this.pages.show();
+
+            // 🎯 첫 페이지이고 landscape 모드일 때 중앙 정렬
+            if (
+                this.render.getOrientation() === Orientation.LANDSCAPE &&
+                this.getCurrentPageIndex() === 0
+            ) {
+                (this.ui as HTMLUI).firstPageCenter();
+            }
+            // 🎯 Portrait 모드이거나 첫 페이지가 아닐 때 중앙 정렬 해제
+            else if (
+                this.render.getOrientation() === Orientation.PORTRAIT ||
+                this.getCurrentPageIndex() !== 0
+            ) {
+                (this.ui as HTMLUI).firstPageCenterReverse();
+            }
+
+            this.trigger('uiUpdate', this, {
+                page: this.getCurrentPageIndex(),
+                mode: this.render.getOrientation(),
+            });
+        }, 1);
+    }
+
+    // PageFlip 클래스에 새 메서드 추가
+    public updateSettings(newSettings: Partial<FlipSetting>): void {
+        this.setting = new Settings().getSettings({
+            ...this.setting,
+            ...newSettings,
+        });
+        this.updateFromUI(); // UI 다시 조정
     }
 }
 
