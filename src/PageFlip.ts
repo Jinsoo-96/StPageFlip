@@ -422,12 +422,11 @@ export class PageFlip extends EventObject {
         this.pages = new HTMLPageCollection(this, this.render, this.ui.getDistElement(), items);
         this.pages.load();
 
-        this.render.start();
-
         this.pages.show(targetPageIndex);
         // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
         setTimeout(() => {
             this.ui.update();
+            this.render.start();
 
             // 🎯 첫 페이지이고 landscape 모드일 때 중앙 정렬
             if (
