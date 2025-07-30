@@ -411,7 +411,6 @@ export class PageFlip extends EventObject {
     }
 
     public updateFromUI(): void {
-        const current = this.pages.getCurrentPageIndex();
         this.ui.destroy();
         this.render.destroy();
 
@@ -425,9 +424,6 @@ export class PageFlip extends EventObject {
         // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
         setTimeout(() => {
             this.ui.update();
-
-            // 🎯 현재 페이지 다시 표시 (설정 변경에 따른 레이아웃 적용)
-            this.pages.show(current);
 
             // 🎯 첫 페이지이고 landscape 모드일 때 중앙 정렬
             if (
