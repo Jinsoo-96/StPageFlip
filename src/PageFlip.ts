@@ -409,64 +409,46 @@ export class PageFlip extends EventObject {
     public updateFromUI(
         items: NodeListOf<HTMLElement> | HTMLElement[],
         targetPageIndex: number,
-    ): Promise<void> {
-        return new Promise((resolve, reject) => {
-            try {
-                // 기존 리소스 정리
-                this.ui.destroy();
-                this.render.destroy();
-                this.pages.destroy();
+    ): void {
+        this.ui.destroy();
+        this.render.destroy();
+        this.pages.destroy();
 
-                // 새로운 인스턴스 생성
-                this.ui = new HTMLUI(this.block, this, this.setting, items);
-                this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
-                this.flipController = new Flip(this.render, this);
+        this.ui = new HTMLUI(this.block, this, this.setting, items);
 
-                this.pages = new HTMLPageCollection(
-                    this,
-                    this.render,
-                    this.ui.getDistElement(),
-                    items,
-                );
-                this.pages.load();
+        this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
+        this.flipController = new Flip(this.render, this);
 
-                this.render.start();
-                this.pages.show(targetPageIndex);
+        this.pages = new HTMLPageCollection(this, this.render, this.ui.getDistElement(), items);
+        this.pages.load();
 
-                // 비동기 완료 처리
-                setTimeout(() => {
-                    try {
-                        this.ui.update();
+        this.render.start();
 
-                        // 중앙 정렬 처리
-                        if (
-                            this.render.getOrientation() === Orientation.LANDSCAPE &&
-                            this.getCurrentPageIndex() === 0
-                        ) {
-                            (this.ui as HTMLUI).firstPageCenter();
-                        } else if (
-                            this.render.getOrientation() === Orientation.PORTRAIT ||
-                            this.getCurrentPageIndex() !== 0
-                        ) {
-                            (this.ui as HTMLUI).firstPageCenterReverse();
-                        }
+        this.pages.show(targetPageIndex);
+        // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
+        setTimeout(() => {
+            this.ui.update();
 
-                        // 이벤트 발생
-                        this.trigger('uiUpdate', this, {
-                            page: this.getCurrentPageIndex(),
-                            mode: this.render.getOrientation(),
-                        });
-
-                        // Promise 성공
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                }, 1);
-            } catch (error) {
-                reject(error);
+            // 🎯 첫 페이지이고 landscape 모드일 때 중앙 정렬
+            if (
+                this.render.getOrientation() === Orientation.LANDSCAPE &&
+                this.getCurrentPageIndex() === 0
+            ) {
+                (this.ui as HTMLUI).firstPageCenter();
             }
-        });
+            // 🎯 Portrait 모드이거나 첫 페이지가 아닐 때 중앙 정렬 해제
+            else if (
+                this.render.getOrientation() === Orientation.PORTRAIT ||
+                this.getCurrentPageIndex() !== 0
+            ) {
+                (this.ui as HTMLUI).firstPageCenterReverse();
+            }
+
+            this.trigger('uiUpdate', this, {
+                page: this.getCurrentPageIndex(),
+                mode: this.render.getOrientation(),
+            });
+        }, 1);
     }
 
     // PageFlip 클래스에 새 메서드 추가
