@@ -19,7 +19,7 @@ export declare class HTMLUI extends UI {
      * 애니메이션 없이 바로 첫 페이지를 중앙에 위치시킴
      */
     setInitialCenterPosition(): void;
-    firstPageCenterWithAnimation(): void;
-    firstPageEndCenterWithAnimation(): void;
-    firstPageCenterReverseWithAnimation(): void;
+    firstPageCenter(): void;
+    firstPageEndCenter(): void;
+    firstPageCenterReverse(): void;
 }

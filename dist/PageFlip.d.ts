@@ -16,7 +16,7 @@ export declare class PageFlip extends EventObject {
     private mousePosition;
     private isUserTouch;
     private isUserMove;
-    private readonly setting;
+    private setting;
     private readonly block;
     private pages;
     private flipController;
@@ -204,6 +204,8 @@ export declare class PageFlip extends EventObject {
      * @param {boolean} isSwipe - true if there was a mobile swipe event
      */
     userStop(pos: Point, isSwipe?: boolean): void;
+    updateFromUI(): void;
+    updateSettings(newSettings: Partial<FlipSetting>): void;
 }
 export { SizeType } from './Settings';
 export { type FlipSetting } from './Settings';
