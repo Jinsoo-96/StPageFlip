@@ -49,11 +49,11 @@ export class HTMLRender extends Render {
         // 3. Shadow DOM 요소들 제거
         this.removeShadowElements();
 
-        // 4. 참조 초기화
-        this.outerShadow = null;
-        this.innerShadow = null;
-        this.hardShadow = null;
-        this.hardInnerShadow = null;
+        // // 4. 참조 초기화
+        // this.outerShadow = null;
+        // this.innerShadow = null;
+        // this.hardShadow = null;
+        // this.hardInnerShadow = null;
     }
 
     /**
@@ -84,8 +84,8 @@ export class HTMLRender extends Render {
     }
 
     private createShadows(): void {
-        // 🎯 기존 shadow 요소들이 있다면 먼저 제거 (중복 방지)
-        this.removeShadowElements();
+        // // 🎯 기존 shadow 요소들이 있다면 먼저 제거 (중복 방지)
+        // this.removeShadowElements();
 
         this.element.insertAdjacentHTML(
             'beforeend',
