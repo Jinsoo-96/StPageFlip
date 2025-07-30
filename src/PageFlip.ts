@@ -419,10 +419,11 @@ export class PageFlip extends EventObject {
         this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
         this.flipController = new Flip(this.render, this);
 
+        this.render.start();
+
         // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
         setTimeout(() => {
             this.ui.update();
-            this.render.update();
 
             // 🎯 현재 페이지 다시 표시 (설정 변경에 따른 레이아웃 적용)
             this.pages.show();
