@@ -420,6 +420,7 @@ export class PageFlip extends EventObject {
         this.flipController = new Flip(this.render, this);
 
         this.render.start();
+        this.updateFromHtml(this.items);
 
         // 🎯 UI와 렌더 영역만 업데이트 (페이지 컬렉션은 그대로 유지)
         setTimeout(() => {
