@@ -88,7 +88,6 @@ export declare abstract class Render {
      * Reload the render area, after update pages
      */
     abstract reload(): void;
-    abstract destroy(): void;
     /**
      * Executed when requestAnimationFrame is called. Performs the current animation process and call drawFrame()
      *
@@ -225,5 +224,6 @@ export declare abstract class Render {
      * @returns {RectPoints} Coordinates of the corners of the rectangle relative to the window
      */
     convertRectToGlobal(rect: RectPoints, direction?: FlipDirection): RectPoints;
+    destroy(): void;
 }
 export {};

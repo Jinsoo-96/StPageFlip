@@ -109,8 +109,6 @@ export abstract class Render {
      */
     public abstract reload(): void;
 
-    public abstract destroy(): void;
-
     /**
      * Executed when requestAnimationFrame is called. Performs the current animation process and call drawFrame()
      *
@@ -496,4 +494,6 @@ export abstract class Render {
             bottomRight: this.convertToGlobal(rect.bottomRight, direction),
         };
     }
+
+    public destroy(): void {}
 }
