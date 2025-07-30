@@ -412,6 +412,7 @@ export class PageFlip extends EventObject {
     ): void {
         this.ui.destroy();
         this.render.destroy();
+        this.pages.destroy();
 
         this.ui = new HTMLUI(this.block, this, this.setting, items);
 
