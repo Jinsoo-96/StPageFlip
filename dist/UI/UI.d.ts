@@ -66,7 +66,7 @@ export declare abstract class UI {
     /**
      * Center first page with animation
      */
-    firstPageCenterWithAnimation(): void;
-    firstPageEndCenterWithAnimation(): void;
-    firstPageCenterReverseWithAnimation(): void;
+    firstPageCenter(): void;
+    firstPageEndCenter(): void;
+    firstPageCenterReverse(): void;
 }

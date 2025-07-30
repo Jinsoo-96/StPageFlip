@@ -323,7 +323,7 @@ export abstract class UI {
     /**
      * Center first page with animation
      */
-    public firstPageCenterWithAnimation(): void {}
-    public firstPageEndCenterWithAnimation(): void {}
-    public firstPageCenterReverseWithAnimation(): void {}
+    public firstPageCenter(): void {}
+    public firstPageEndCenter(): void {}
+    public firstPageCenterReverse(): void {}
 }

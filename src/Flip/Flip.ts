@@ -385,15 +385,15 @@ export class Flip {
         if (isTurned && this.app.getOrientation() === Orientation.LANDSCAPE) {
             if (this.calc.getDirection() === FlipDirection.BACK) {
                 if (this.app.getCurrentPageIndex() === 1) {
-                    this.app.getUI().firstPageCenterWithAnimation();
+                    this.app.getUI().firstPageCenter();
                 } else if (this.app.getCurrentPageIndex() === this.app.getPageCount() - 1) {
-                    this.app.getUI().firstPageCenterReverseWithAnimation();
+                    this.app.getUI().firstPageCenterReverse();
                 }
             } else {
                 if (this.app.getCurrentPageIndex() === 0) {
-                    this.app.getUI().firstPageCenterReverseWithAnimation();
+                    this.app.getUI().firstPageCenterReverse();
                 } else if (this.app.getCurrentPageIndex() === this.app.getPageCount() - 3) {
-                    this.app.getUI().firstPageEndCenterWithAnimation();
+                    this.app.getUI().firstPageEndCenter();
                 }
             }
         }
