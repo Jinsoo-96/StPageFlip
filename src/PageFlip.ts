@@ -417,12 +417,14 @@ export class PageFlip extends EventObject {
         this.ui = new HTMLUI(this.block, this, this.setting, items);
 
         // this.render = new HTMLRender(this, this.setting, this.ui.getDistElement());
+        this.ui.update();
+        this.render.update();
+
         this.flipController = new Flip(this.render, this);
 
         this.pages = new HTMLPageCollection(this, this.render, this.ui.getDistElement(), items);
         this.pages.load();
-        // this.ui.update();
-        this.render.reload();
+        // this.render.reload();
         // this.render.start();
 
         this.pages.show(targetPageIndex);
