@@ -85,7 +85,7 @@ export class HTMLRender extends Render {
 
     private createShadows(): void {
         // // 🎯 기존 shadow 요소들이 있다면 먼저 제거 (중복 방지)
-        // this.removeShadowElements();
+        this.removeShadowElements();
 
         this.element.insertAdjacentHTML(
             'beforeend',
