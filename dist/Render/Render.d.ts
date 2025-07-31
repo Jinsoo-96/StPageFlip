@@ -73,6 +73,8 @@ export declare abstract class Render {
     private boundsRect;
     /** Timer started from start of rendering */
     protected timer: number;
+    /** ID of the current requestAnimationFrame 진수 추가 */
+    private animationId;
     /**
      * Safari browser definitions for resolving a bug with a css property clip-area
      *
@@ -96,8 +98,20 @@ export declare abstract class Render {
     private render;
     /**
      * Running requestAnimationFrame, and rendering process
+     * 진수 수정
      */
     start(): void;
+    /**
+     * Start the rendering loop using requestAnimationFrame
+     * This method is called only once when the book is initialized
+     * 진수 추가
+     */
+    private startRenderLoop;
+    /**
+     * Stop the rendering loop and clear the animation ID
+     * 진수 수정
+     */
+    destroy(): void;
     /**
      * Start a new animation process
      *
@@ -224,6 +238,5 @@ export declare abstract class Render {
      * @returns {RectPoints} Coordinates of the corners of the rectangle relative to the window
      */
     convertRectToGlobal(rect: RectPoints, direction?: FlipDirection): RectPoints;
-    destroy(): void;
 }
 export {};

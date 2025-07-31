@@ -83,6 +83,9 @@ export abstract class Render {
     /** Timer started from start of rendering */
     protected timer = 0;
 
+    /** ID of the current requestAnimationFrame 진수 추가 */
+    private animationId: number | null = null;
+
     /**
      * Safari browser definitions for resolving a bug with a css property clip-area
      *
@@ -135,18 +138,38 @@ export abstract class Render {
 
     /**
      * Running requestAnimationFrame, and rendering process
+     * 진수 수정
      */
     public start(): void {
         this.update();
-
-        const loop = (timer: number): void => {
-            this.render(timer);
-            requestAnimationFrame(loop);
-        };
-
-        requestAnimationFrame(loop);
+        this.startRenderLoop();
     }
 
+    /**
+     * Start the rendering loop using requestAnimationFrame
+     * This method is called only once when the book is initialized
+     * 진수 추가
+     */
+    private startRenderLoop(): void {
+        const loop = (timer: number): void => {
+            this.render(timer);
+            // 🎯 매번 새로운 ID 저장
+            this.animationId = requestAnimationFrame(loop);
+        };
+        // 🎯 첫 번째 ID도 저장
+        this.animationId = requestAnimationFrame(loop);
+    }
+
+    /**
+     * Stop the rendering loop and clear the animation ID
+     * 진수 수정
+     */
+    public destroy(): void {
+        if (this.animationId !== null) {
+            cancelAnimationFrame(this.animationId); // ✅ 완전히 중단!
+            this.animationId = null;
+        }
+    }
     /**
      * Start a new animation process
      *
@@ -494,6 +517,4 @@ export abstract class Render {
             bottomRight: this.convertToGlobal(rect.bottomRight, direction),
         };
     }
-
-    public destroy(): void {}
 }

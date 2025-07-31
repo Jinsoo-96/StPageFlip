@@ -410,9 +410,14 @@ export class PageFlip extends EventObject {
         items: NodeListOf<HTMLElement> | HTMLElement[],
         targetPageIndex: number,
     ): void {
-        this.ui.destroy();
-        this.pages.destroy();
+        // 1. Render 먼저 중지 (가장 핵심!)
         this.render.destroy();
+
+        // 2. Pages 정리 (Render에 의존하는 객체들)
+        this.pages.destroy();
+
+        // 3. UI 마지막 (DOM 이벤트 해제)
+        this.ui.destroy();
 
         this.ui = new HTMLUI(this.block, this, this.setting, items);
 

@@ -40,6 +40,9 @@ export class HTMLRender extends Render {
      * Clean up HTMLRender resources and remove DOM elements
      */
     public destroy(): void {
+        // 0. 부모 클래스의 destroy 호출
+        super.destroy();
+
         // 1. 애니메이션 중지 (부모 클래스)
         this.finishAnimation();
 
