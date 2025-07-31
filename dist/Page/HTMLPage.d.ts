@@ -9,6 +9,12 @@ export declare class HTMLPage extends Page {
     private temporaryCopy;
     private isLoad;
     constructor(render: Render, element: HTMLElement, density: PageDensity);
+    /** 한페이지 모드일때 뒷면 비우기 조건 추가 */
+    private shouldUseBlankPage;
+    /**
+     * 빈 내용의 임시 복사본 생성
+     */
+    private createBlankTemporaryCopy;
     newTemporaryCopy(): Page;
     getTemporaryCopy(): Page;
     hideTemporaryCopy(): void;

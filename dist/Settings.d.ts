@@ -52,6 +52,8 @@ export interface FlipSetting {
     hardPageHover: boolean;
     /** 스와이프 제외할 CSS 선택자 배열 ['.abc', '.adf']*/
     swipeExcludeSelectors: string[];
+    /** Portrait 모드에서 빈 페이지 뒷면 사용 */
+    useBlankPage: boolean;
 }
 export declare class Settings {
     private _default;

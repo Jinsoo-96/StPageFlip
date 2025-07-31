@@ -1,5 +1,5 @@
 import { Page, PageDensity, PageOrientation } from './Page';
-import { Render } from '../Render/Render';
+import { Render, Orientation } from '../Render/Render';
 import { Helper } from '../Helper';
 import { FlipDirection } from '../Flip/Flip';
 import { Point } from '../BasicTypes';
@@ -23,9 +23,41 @@ export class HTMLPage extends Page {
         this.element.classList.add('--' + density);
     }
 
+    /** 한페이지 모드일때 뒷면 비우기 조건 추가 */
+    private shouldUseBlankPage(): boolean {
+        return (
+            this.render.getSettings().useBlankPage &&
+            this.render.getOrientation() === Orientation.PORTRAIT &&
+            this.nowDrawingDensity === PageDensity.SOFT
+        );
+    }
+
+    /**
+     * 빈 내용의 임시 복사본 생성
+     */
+    private createBlankTemporaryCopy(): Page {
+        if (this.temporaryCopy === null) {
+            // 🎯 빈 div 생성 (원본과 같은 구조이지만 내용 없음)
+            this.copiedElement = document.createElement('div');
+            this.copiedElement.className = this.element.className; // 같은 클래스 적용
+            this.element.parentElement.appendChild(this.copiedElement);
+
+            this.temporaryCopy = new HTMLPage(
+                this.render,
+                this.copiedElement,
+                this.nowDrawingDensity,
+            );
+        }
+
+        return this.getTemporaryCopy();
+    }
+
     public newTemporaryCopy(): Page {
         if (this.nowDrawingDensity === PageDensity.HARD) {
             return this;
+        }
+        if (this.shouldUseBlankPage()) {
+            return this.createBlankTemporaryCopy();
         }
 
         if (this.temporaryCopy === null) {

@@ -66,6 +66,9 @@ export interface FlipSetting {
 
     /** 스와이프 제외할 CSS 선택자 배열 ['.abc', '.adf']*/
     swipeExcludeSelectors: string[]; // 스와이프 제외할 CSS 선택자 배열
+
+    /** Portrait 모드에서 빈 페이지 뒷면 사용 */
+    useBlankPage: boolean;
 }
 
 export class Settings {
@@ -94,6 +97,7 @@ export class Settings {
         cornerSensitivity: 5, // Default sensitivity for corner hover
         hardPageHover: true, // Default: Enable corner hover for hard pages
         swipeExcludeSelectors: [], // Default empty array for swipe exclusion selectors
+        useBlankPage: false, // 기본값: 기존 동작 유지
     };
 
     /**
