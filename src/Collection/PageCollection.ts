@@ -230,8 +230,9 @@ export abstract class PageCollection {
     /**
      * Show specified page
      * @param {number} pageNum - Page index (from 0s)
+     * @param {boolean} triggerEvent - Whether to trigger events 25.08.04 진수 추가 무한 페이징을 위해서
      */
-    public show(pageNum: number = null): void {
+    public show(pageNum: number = null, triggerEvent: boolean = true): void {
         if (pageNum === null) pageNum = this.currentPageIndex;
 
         if (pageNum < 0 || pageNum >= this.pages.length) return;
@@ -239,7 +240,7 @@ export abstract class PageCollection {
         const spreadIndex = this.getSpreadIndexByPage(pageNum);
         if (spreadIndex !== null) {
             this.currentSpreadIndex = spreadIndex;
-            this.showSpread();
+            this.showSpread(triggerEvent);
         }
     }
 
@@ -264,9 +265,10 @@ export abstract class PageCollection {
     }
 
     /**
-     * Show current spread
+     * Show current spread 25.08.04 진수 수정 무한 페이징을 위해
+     * @param {boolean} triggerEvent - Whether to trigger events
      */
-    private showSpread(): void {
+    private showSpread(triggerEvent: boolean = true): void {
         const spread = this.getSpread()[this.currentSpreadIndex];
 
         if (spread.length === 2) {
@@ -288,6 +290,10 @@ export abstract class PageCollection {
         }
 
         this.currentPageIndex = spread[0];
-        this.app.updatePageIndex(this.currentPageIndex);
+
+        // 🎯 조건부 이벤트 발생
+        if (triggerEvent) {
+            this.app.updatePageIndex(this.currentPageIndex);
+        }
     }
 }

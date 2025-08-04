@@ -199,9 +199,10 @@ export class PageFlip extends EventObject {
      * Turn to the specified page number (without animation)
      *
      * @param {number} page - New page number
+     * @param {boolean} triggerEvent - Whether to trigger flip event (default: true) 25.08.04 진수 수정 무한페이징을 위해 이벤트 억제
      */
-    public turnToPage(page: number): void {
-        this.pages.show(page);
+    public turnToPage(page: number, triggerEvent: boolean = true): void {
+        this.pages.show(page, triggerEvent);
     }
 
     /**
