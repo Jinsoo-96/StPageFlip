@@ -204,8 +204,8 @@ export class PageFlip extends EventObject {
         this.pages.show(page);
     }
 
-    public loopPage(page: number): void {
-        this.pages.loopShow(page);
+    public loopPage(): void {
+        this.pages.loopShow();
     }
 
     /**

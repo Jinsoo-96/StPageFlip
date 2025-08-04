@@ -80,7 +80,7 @@ export declare class PageFlip extends EventObject {
      * @param {number} page - New page number
      */
     turnToPage(page: number): void;
-    loopPage(page: number): void;
+    loopPage(): void;
     /**
      * Turn to the next page (with animation)
      *
