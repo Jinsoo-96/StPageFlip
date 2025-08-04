@@ -20,6 +20,16 @@ export declare abstract class PageCollection {
     protected landscapeSpread: NumberArray[];
     /**  One-page spread in portrait mode */
     protected portraitSpread: NumberArray[];
+    /** 가상화 모드 활성화 여부 */
+    protected isVirtualMode: boolean;
+    /** 논리적 현재 페이지 인덱스 (가상화 모드에서 사용) */
+    protected virtualCurrentPageIndex: number;
+    protected virtualSpreadMap: {
+        start: number[];
+        middle: number[];
+        end: number[];
+        threshold: number;
+    };
     protected constructor(app: PageFlip, render: Render);
     /**
      * Load pages
@@ -33,6 +43,14 @@ export declare abstract class PageCollection {
      * Split the book on the two-page spread in landscape mode and one-page spread in portrait mode
      */
     protected createSpread(): void;
+    /**
+     * 🎯 가상화 스프레드 매핑 설정
+     */
+    private setupVirtualSpreadMapping;
+    /**
+     * 🎯 가상 페이지 인덱스에 해당하는 실제 스프레드 인덱스 반환
+     */
+    private getVirtualSpreadIndex;
     /**
      * Get spread by mode (portrait or landscape)
      */
@@ -90,7 +108,7 @@ export declare abstract class PageCollection {
      */
     showPrev(): void;
     /**
-     * Get the number of the current spread in book
+     * Get the number of the current page in list
      */
     getCurrentPageIndex(): number;
     /**
@@ -108,6 +126,14 @@ export declare abstract class PageCollection {
      * @param {number} newIndex - new spread index
      */
     setCurrentSpreadIndex(newIndex: number): void;
+    /**
+     * 🎯 가상화 모드 상태 반환
+     */
+    isVirtualization(): boolean;
+    /**
+     * 🎯 가상 페이지 인덱스 설정 (외부에서 호출 가능)
+     */
+    setVirtualPageIndex(pageIndex: number): void;
     /**
      * Show current spread
      */
