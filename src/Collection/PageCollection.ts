@@ -239,7 +239,10 @@ export abstract class PageCollection {
 
         const spreadIndex = this.getSpreadIndexByPage(pageNum);
         if (spreadIndex !== null) {
-            this.currentSpreadIndex = spreadIndex;
+            // triggerEvent가 true일 때만 상태 업데이트 특정 구간에서의 무한 루프를 위해
+            if (triggerEvent) {
+                this.currentSpreadIndex = spreadIndex;
+            }
             this.showSpread(triggerEvent);
         }
     }
