@@ -207,28 +207,44 @@ export abstract class PageCollection {
     }
 
     /**
-     * Show next spread
+     * Show next spread with virtualization logic
+     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
      */
     public showNext(): void {
-        if (this.currentSpreadIndex < this.getSpread().length) {
-            if (this.currentSpreadIndex >= 3) {
+        const maxPages = this.totalVirtualPages || this.pages.length;
+        if (this.realPageIndex < maxPages - 1) {
+            this.realPageIndex++; // 실제 페이지 인덱스 증가
+
+            if (this.isInLoopZone()) {
+                // 루프 구간: currentSpreadIndex는 중간에 고정하고 내용만 업데이트
                 this.showSpread();
             } else {
-                this.currentSpreadIndex++;
-                this.realPageIndex++; // 실제 페이지 추적
-                this.showSpread();
+                // 정상 구간: 기존 로직대로 페이지 이동
+                if (this.currentSpreadIndex < this.getSpread().length - 1) {
+                    this.currentSpreadIndex++;
+                    this.showSpread();
+                }
             }
         }
     }
-
     /**
-     * Show prev spread
+     * Show prev spread with virtualization logic
+     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
      */
     public showPrev(): void {
-        if (this.currentSpreadIndex > 0) {
-            this.currentSpreadIndex--;
-            this.realPageIndex--; // 실제 페이지 추적
-            this.showSpread();
+        if (this.realPageIndex > 0) {
+            this.realPageIndex--; // 실제 페이지 인덱스 감소
+
+            if (this.isInLoopZone()) {
+                // 루프 구간: currentSpreadIndex는 중간에 고정하고 내용만 업데이트
+                this.showSpread();
+            } else {
+                // 정상 구간: 기존 로직대로 페이지 이동
+                if (this.currentSpreadIndex > 0) {
+                    this.currentSpreadIndex--;
+                    this.showSpread();
+                }
+            }
         }
     }
 
@@ -277,6 +293,7 @@ export abstract class PageCollection {
 
     /**
      * Show current spread
+     * 25.08.04 진수 추가 루프 발생 중 실제 페이지 반환
      */
     private showSpread(): void {
         const spread = this.getSpread()[this.currentSpreadIndex];
@@ -300,34 +317,31 @@ export abstract class PageCollection {
         }
 
         this.currentPageIndex = spread[0];
-        this.app.updatePageIndex(this.currentPageIndex);
+        if (this.totalVirtualPages) {
+            this.app.updatePageIndex(this.realPageIndex);
+        } else {
+            this.app.updatePageIndex(this.currentPageIndex);
+        }
     }
 
     /**
-     * 25.08.04 진수 추가 루프 발생 함수
+     * Get the middle index for loop (중간 위치 계산)
      */
-    private showLoopSpread(): void {
-        const spread = this.getSpread()[this.currentSpreadIndex];
+    private getLoopCenterIndex(): number {
+        return Math.floor(this.pages.length / 2);
+    }
 
-        if (spread.length === 2) {
-            this.render.setLeftPage(this.pages[spread[0]]);
-            this.render.setRightPage(this.pages[spread[1]]);
-        } else {
-            if (this.render.getOrientation() === Orientation.LANDSCAPE) {
-                if (spread[0] === this.pages.length - 1) {
-                    this.render.setLeftPage(this.pages[spread[0]]);
-                    this.render.setRightPage(null);
-                } else {
-                    this.render.setLeftPage(null);
-                    this.render.setRightPage(this.pages[spread[0]]);
-                }
-            } else {
-                this.render.setLeftPage(null);
-                this.render.setRightPage(this.pages[spread[0]]);
-            }
-        }
+    /**
+     * Check if currently in loop zone
+     */
+    public isInLoopZone(): boolean {
+        // 가상화 모드가 아니면 항상 false (정상 구간으로 처리)
+        if (!this.totalVirtualPages) return false;
 
-        this.currentPageIndex = spread[0];
-        this.app.updatePageIndex(this.currentPageIndex);
+        const centerIndex = this.getLoopCenterIndex();
+        return (
+            this.realPageIndex >= centerIndex &&
+            this.realPageIndex < this.totalVirtualPages - centerIndex
+        );
     }
 }

@@ -85,11 +85,13 @@ export declare abstract class PageCollection {
      */
     getBottomPage(direction: FlipDirection): Page;
     /**
-     * Show next spread
+     * Show next spread with virtualization logic
+     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
      */
     showNext(): void;
     /**
-     * Show prev spread
+     * Show prev spread with virtualization logic
+     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
      */
     showPrev(): void;
     /**
@@ -113,11 +115,16 @@ export declare abstract class PageCollection {
     setCurrentSpreadIndex(newIndex: number): void;
     /**
      * Show current spread
+     * 25.08.04 진수 추가 루프 발생 중 실제 페이지 반환
      */
     private showSpread;
     /**
-     * 25.08.04 진수 추가 루프 발생 함수
+     * Get the middle index for loop (중간 위치 계산)
      */
-    private showLoopSpread;
+    private getLoopCenterIndex;
+    /**
+     * Check if currently in loop zone
+     */
+    isInLoopZone(): boolean;
 }
 export {};
