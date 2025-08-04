@@ -212,6 +212,7 @@ export abstract class PageCollection {
     public showNext(): void {
         if (this.currentSpreadIndex < this.getSpread().length) {
             this.currentSpreadIndex++;
+            this.currentSpreadIndex++;
             this.realPageIndex++; // 실제 페이지 추적
             this.showSpread();
         }
@@ -222,6 +223,7 @@ export abstract class PageCollection {
      */
     public showPrev(): void {
         if (this.currentSpreadIndex > 0) {
+            this.currentSpreadIndex--;
             this.currentSpreadIndex--;
             this.realPageIndex--; // 실제 페이지 추적
             this.showSpread();
