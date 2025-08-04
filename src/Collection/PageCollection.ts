@@ -211,7 +211,7 @@ export abstract class PageCollection {
      */
     public showNext(): void {
         if (this.currentSpreadIndex < this.getSpread().length) {
-            if ((this.currentSpreadIndex = 3)) {
+            if (this.currentSpreadIndex === 3) {
                 this.showSpread();
             } else {
             }
