@@ -14,6 +14,9 @@ export declare abstract class PageCollection {
     protected pages: Page[];
     /** Index of the current page in list */
     protected currentPageIndex: number;
+    /** 가상화 페이지 */
+    protected realPageIndex: number;
+    protected totalVirtualPages: number;
     /** Number of the current spread in book */
     protected currentSpreadIndex: number;
     /**  Two-page spread in landscape mode */
@@ -113,13 +116,8 @@ export declare abstract class PageCollection {
      */
     private showSpread;
     /**
-     * Loop to page without changing state (새 기능)
-     * @param {number} pageNum - Page index to loop to
+     * Show current spread
      */
-    loopShow(): void;
-    /**
-     * Show spread without state changes
-     */
-    private showSpreadSilently;
+    private showLoopSpread;
 }
 export {};

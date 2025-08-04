@@ -204,10 +204,6 @@ export class PageFlip extends EventObject {
         this.pages.show(page);
     }
 
-    public loopPage(): void {
-        this.pages.loopShow();
-    }
-
     /**
      * Turn to the next page (with animation)
      *

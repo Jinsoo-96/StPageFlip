@@ -69,6 +69,9 @@ export interface FlipSetting {
 
     /** Portrait 모드에서 빈 페이지 뒷면 사용 */
     useBlankPage: boolean;
+
+    /** 가상화 사용시 실제 데이터의 총 페이지 수 */
+    totalVirtualPages?: number;
 }
 
 export class Settings {
@@ -98,6 +101,7 @@ export class Settings {
         hardPageHover: true, // Default: Enable corner hover for hard pages
         swipeExcludeSelectors: [], // Default empty array for swipe exclusion selectors
         useBlankPage: false, // 기본값: 기존 동작 유지
+        totalVirtualPages: undefined,
     };
 
     /**

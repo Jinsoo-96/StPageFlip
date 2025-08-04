@@ -18,6 +18,10 @@ export abstract class PageCollection {
     /** Index of the current page in list */
     protected currentPageIndex = 0;
 
+    /** 가상화 페이지 */
+    protected realPageIndex = 0;
+    protected totalVirtualPages = 0;
+
     /** Number of the current spread in book */
     protected currentSpreadIndex = 0;
     /**  Two-page spread in landscape mode */
@@ -31,6 +35,8 @@ export abstract class PageCollection {
 
         this.currentPageIndex = 0;
         this.isShowCover = this.app.getSettings().showCover;
+
+        this.totalVirtualPages = this.app.getSettings().totalVirtualPages;
     }
 
     /**
@@ -205,7 +211,8 @@ export abstract class PageCollection {
      */
     public showNext(): void {
         if (this.currentSpreadIndex < this.getSpread().length) {
-            this.currentSpreadIndex++;
+            // this.currentSpreadIndex++;
+            // this.realPageIndex++; // 실제 페이지 추적
             this.showSpread();
         }
     }
@@ -215,7 +222,8 @@ export abstract class PageCollection {
      */
     public showPrev(): void {
         if (this.currentSpreadIndex > 0) {
-            this.currentSpreadIndex--;
+            // this.currentSpreadIndex--;
+            // this.realPageIndex--; // 실제 페이지 추적
             this.showSpread();
         }
     }
@@ -292,24 +300,11 @@ export abstract class PageCollection {
     }
 
     /**
-     * Loop to page without changing state (새 기능)
-     * @param {number} pageNum - Page index to loop to
+     * Show current spread
      */
-    public loopShow(): void {
-        const spreadIndex = this.getSpreadIndexByPage(this.currentPageIndex);
-        console.log('이게 문제니', this.currentPageIndex);
-        if (spreadIndex !== null) {
-            // 🔥 상태 변경 없이 화면만 표시
-            this.showSpreadSilently(spreadIndex);
-        }
-    }
-    /**
-     * Show spread without state changes
-     */
-    private showSpreadSilently(spreadIndex: number): void {
-        const spread = this.getSpread()[spreadIndex];
+    private showLoopSpread(): void {
+        const spread = this.getSpread()[this.currentSpreadIndex];
 
-        // 렌더링만 수행
         if (spread.length === 2) {
             this.render.setLeftPage(this.pages[spread[0]]);
             this.render.setRightPage(this.pages[spread[1]]);
@@ -328,7 +323,7 @@ export abstract class PageCollection {
             }
         }
 
-        // ❌ 상태 업데이트 없음
-        // ❌ 이벤트 발생 없음
+        this.currentPageIndex = spread[0];
+        this.app.updatePageIndex(this.currentPageIndex);
     }
 }
