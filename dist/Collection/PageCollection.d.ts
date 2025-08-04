@@ -116,7 +116,7 @@ export declare abstract class PageCollection {
      */
     private showSpread;
     /**
-     * Show current spread
+     * 25.08.04 진수 추가 루프 발생 함수
      */
     private showLoopSpread;
 }

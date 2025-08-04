@@ -211,8 +211,8 @@ export abstract class PageCollection {
      */
     public showNext(): void {
         if (this.currentSpreadIndex < this.getSpread().length) {
-            // this.currentSpreadIndex++;
-            // this.realPageIndex++; // 실제 페이지 추적
+            this.currentSpreadIndex++;
+            this.realPageIndex++; // 실제 페이지 추적
             this.showSpread();
         }
     }
@@ -222,8 +222,8 @@ export abstract class PageCollection {
      */
     public showPrev(): void {
         if (this.currentSpreadIndex > 0) {
-            // this.currentSpreadIndex--;
-            // this.realPageIndex--; // 실제 페이지 추적
+            this.currentSpreadIndex--;
+            this.realPageIndex--; // 실제 페이지 추적
             this.showSpread();
         }
     }
@@ -300,7 +300,7 @@ export abstract class PageCollection {
     }
 
     /**
-     * Show current spread
+     * 25.08.04 진수 추가 루프 발생 함수
      */
     private showLoopSpread(): void {
         const spread = this.getSpread()[this.currentSpreadIndex];
