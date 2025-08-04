@@ -96,8 +96,9 @@ export declare abstract class PageCollection {
     /**
      * Show specified page
      * @param {number} pageNum - Page index (from 0s)
+     * @param {boolean} triggerEvent - Whether to trigger events 25.08.04 진수 추가 무한 페이징을 위해서
      */
-    show(pageNum?: number): void;
+    show(pageNum?: number, triggerEvent?: boolean): void;
     /**
      * Index of the current page in list
      */
@@ -109,7 +110,8 @@ export declare abstract class PageCollection {
      */
     setCurrentSpreadIndex(newIndex: number): void;
     /**
-     * Show current spread
+     * Show current spread 25.08.04 진수 수정 무한 페이징을 위해
+     * @param {boolean} triggerEvent - Whether to trigger events
      */
     private showSpread;
 }
