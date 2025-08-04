@@ -18,10 +18,6 @@ export abstract class PageCollection {
     /** Index of the current page in list */
     protected currentPageIndex = 0;
 
-    /** 가상화 페이지 */
-    protected realPageIndex = 0;
-    protected totalVirtualPages = 0;
-
     /** Number of the current spread in book */
     protected currentSpreadIndex = 0;
     /**  Two-page spread in landscape mode */
@@ -35,8 +31,6 @@ export abstract class PageCollection {
 
         this.currentPageIndex = 0;
         this.isShowCover = this.app.getSettings().showCover;
-
-        this.totalVirtualPages = this.app.getSettings().totalVirtualPages;
     }
 
     /**
@@ -102,31 +96,10 @@ export abstract class PageCollection {
     }
 
     /**
-     * Get the total number of pages (considering cover mode and orientation)
+     * Get the total number of pages
      */
     public getPageCount(): number {
-        if (!this.totalVirtualPages) {
-            // 일반 모드: DOM 페이지 수 그대로
-            return this.pages.length;
-        }
-
-        // 가상화 모드: 표지 설정과 모드에 따른 계산
-        let virtualPages = this.totalVirtualPages;
-
-        if (this.render.getOrientation() === Orientation.PORTRAIT) {
-            // Portrait: 한 페이지씩 보이므로 그대로
-            return virtualPages;
-        } else {
-            // Landscape: 두 페이지씩 보이므로 절반
-            virtualPages = Math.ceil(this.totalVirtualPages / 2);
-
-            // showCover가 true면 첫 페이지(표지)는 혼자 표시되므로 +1
-            if (this.isShowCover) {
-                virtualPages += 1;
-            }
-        }
-
-        return virtualPages;
+        return this.pages.length;
     }
 
     /**
@@ -228,44 +201,22 @@ export abstract class PageCollection {
     }
 
     /**
-     * Show next spread with virtualization logic
-     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
+     * Show next spread
      */
     public showNext(): void {
-        const maxPages = this.getPageCount(); // getPageCount() 사용으로 통일
-        if (this.realPageIndex < maxPages - 1) {
-            this.realPageIndex++; // 실제 페이지 인덱스 증가
-
-            if (this.isInLoopZone()) {
-                // 루프 구간: currentSpreadIndex는 중간에 고정하고 내용만 업데이트
-                this.showSpread();
-            } else {
-                // 정상 구간: 기존 로직대로 페이지 이동
-                if (this.currentSpreadIndex < this.getSpread().length - 1) {
-                    this.currentSpreadIndex++;
-                    this.showSpread();
-                }
-            }
+        if (this.currentSpreadIndex < this.getSpread().length) {
+            this.currentSpreadIndex++;
+            this.showSpread();
         }
     }
+
     /**
-     * Show prev spread with virtualization logic
-     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
+     * Show prev spread
      */
     public showPrev(): void {
-        if (this.realPageIndex > 0) {
-            this.realPageIndex--; // 실제 페이지 인덱스 감소
-
-            if (this.isInLoopZone()) {
-                // 루프 구간: currentSpreadIndex는 중간에 고정하고 내용만 업데이트
-                this.showSpread();
-            } else {
-                // 정상 구간: 기존 로직대로 페이지 이동
-                if (this.currentSpreadIndex > 0) {
-                    this.currentSpreadIndex--;
-                    this.showSpread();
-                }
-            }
+        if (this.currentSpreadIndex > 0) {
+            this.currentSpreadIndex--;
+            this.showSpread();
         }
     }
 
@@ -314,7 +265,6 @@ export abstract class PageCollection {
 
     /**
      * Show current spread
-     * 25.08.04 진수 추가 루프 발생 중 실제 페이지 반환
      */
     private showSpread(): void {
         const spread = this.getSpread()[this.currentSpreadIndex];
@@ -338,31 +288,6 @@ export abstract class PageCollection {
         }
 
         this.currentPageIndex = spread[0];
-        if (this.totalVirtualPages) {
-            this.app.updatePageIndex(this.realPageIndex);
-        } else {
-            this.app.updatePageIndex(this.currentPageIndex);
-        }
-    }
-
-    /**
-     * Get the middle index for loop (중간 위치 계산)
-     */
-    private getLoopCenterIndex(): number {
-        return Math.floor(this.getSpread().length / 2);
-    }
-
-    /**
-     * Check if currently in loop zone
-     */
-    public isInLoopZone(): boolean {
-        // 가상화 모드가 아니면 항상 false (정상 구간으로 처리)
-        if (!this.totalVirtualPages) return false;
-
-        const centerIndex = this.getLoopCenterIndex();
-        return (
-            this.realPageIndex >= centerIndex &&
-            this.realPageIndex < this.totalVirtualPages - centerIndex
-        );
+        this.app.updatePageIndex(this.currentPageIndex);
     }
 }

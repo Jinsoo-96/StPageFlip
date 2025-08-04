@@ -14,9 +14,6 @@ export declare abstract class PageCollection {
     protected pages: Page[];
     /** Index of the current page in list */
     protected currentPageIndex: number;
-    /** 가상화 페이지 */
-    protected realPageIndex: number;
-    protected totalVirtualPages: number;
     /** Number of the current spread in book */
     protected currentSpreadIndex: number;
     /**  Two-page spread in landscape mode */
@@ -47,7 +44,7 @@ export declare abstract class PageCollection {
      */
     getSpreadIndexByPage(pageNum: number): number;
     /**
-     * Get the total number of pages (considering cover mode and orientation)
+     * Get the total number of pages
      */
     getPageCount(): number;
     /**
@@ -85,13 +82,11 @@ export declare abstract class PageCollection {
      */
     getBottomPage(direction: FlipDirection): Page;
     /**
-     * Show next spread with virtualization logic
-     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
+     * Show next spread
      */
     showNext(): void;
     /**
-     * Show prev spread with virtualization logic
-     * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
+     * Show prev spread
      */
     showPrev(): void;
     /**
@@ -115,16 +110,7 @@ export declare abstract class PageCollection {
     setCurrentSpreadIndex(newIndex: number): void;
     /**
      * Show current spread
-     * 25.08.04 진수 추가 루프 발생 중 실제 페이지 반환
      */
     private showSpread;
-    /**
-     * Get the middle index for loop (중간 위치 계산)
-     */
-    private getLoopCenterIndex;
-    /**
-     * Check if currently in loop zone
-     */
-    isInLoopZone(): boolean;
 }
 export {};
