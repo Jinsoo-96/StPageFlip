@@ -116,7 +116,7 @@ export declare abstract class PageCollection {
      * Loop to page without changing state (새 기능)
      * @param {number} pageNum - Page index to loop to
      */
-    loopShow(pageNum: number): void;
+    loopShow(): void;
     /**
      * Show spread without state changes
      */

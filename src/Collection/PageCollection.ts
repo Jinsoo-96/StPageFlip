@@ -295,10 +295,8 @@ export abstract class PageCollection {
      * Loop to page without changing state (새 기능)
      * @param {number} pageNum - Page index to loop to
      */
-    public loopShow(pageNum: number): void {
-        if (pageNum < 0 || pageNum >= this.pages.length) return;
-
-        const spreadIndex = this.getSpreadIndexByPage(pageNum);
+    public loopShow(): void {
+        const spreadIndex = this.getSpreadIndexByPage(this.currentPageIndex);
         if (spreadIndex !== null) {
             // 🔥 상태 변경 없이 화면만 표시
             this.showSpreadSilently(spreadIndex);
