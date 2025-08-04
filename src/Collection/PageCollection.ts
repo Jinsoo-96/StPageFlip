@@ -230,20 +230,16 @@ export abstract class PageCollection {
     /**
      * Show specified page
      * @param {number} pageNum - Page index (from 0s)
-     * @param {boolean} triggerEvent - Whether to trigger events 25.08.04 진수 추가 무한 페이징을 위해서
      */
-    public show(pageNum: number = null, triggerEvent: boolean = true): void {
+    public show(pageNum: number = null): void {
         if (pageNum === null) pageNum = this.currentPageIndex;
 
         if (pageNum < 0 || pageNum >= this.pages.length) return;
 
         const spreadIndex = this.getSpreadIndexByPage(pageNum);
         if (spreadIndex !== null) {
-            // triggerEvent가 true일 때만 상태 업데이트 특정 구간에서의 무한 루프를 위해
-            if (triggerEvent) {
-                this.currentSpreadIndex = spreadIndex;
-            }
-            this.showSpread(triggerEvent);
+            this.currentSpreadIndex = spreadIndex;
+            this.showSpread();
         }
     }
 
@@ -268,10 +264,9 @@ export abstract class PageCollection {
     }
 
     /**
-     * Show current spread 25.08.04 진수 수정 무한 페이징을 위해
-     * @param {boolean} triggerEvent - Whether to trigger events
+     * Show current spread
      */
-    private showSpread(triggerEvent: boolean = true): void {
+    private showSpread(): void {
         const spread = this.getSpread()[this.currentSpreadIndex];
 
         if (spread.length === 2) {
@@ -293,10 +288,48 @@ export abstract class PageCollection {
         }
 
         this.currentPageIndex = spread[0];
+        this.app.updatePageIndex(this.currentPageIndex);
+    }
 
-        // 🎯 조건부 이벤트 발생
-        if (triggerEvent) {
-            this.app.updatePageIndex(this.currentPageIndex);
+    /**
+     * Loop to page without changing state (새 기능)
+     * @param {number} pageNum - Page index to loop to
+     */
+    public loopShow(pageNum: number): void {
+        if (pageNum < 0 || pageNum >= this.pages.length) return;
+
+        const spreadIndex = this.getSpreadIndexByPage(pageNum);
+        if (spreadIndex !== null) {
+            // 🔥 상태 변경 없이 화면만 표시
+            this.showSpreadSilently(spreadIndex);
         }
+    }
+    /**
+     * Show spread without state changes
+     */
+    private showSpreadSilently(spreadIndex: number): void {
+        const spread = this.getSpread()[spreadIndex];
+
+        // 렌더링만 수행
+        if (spread.length === 2) {
+            this.render.setLeftPage(this.pages[spread[0]]);
+            this.render.setRightPage(this.pages[spread[1]]);
+        } else {
+            if (this.render.getOrientation() === Orientation.LANDSCAPE) {
+                if (spread[0] === this.pages.length - 1) {
+                    this.render.setLeftPage(this.pages[spread[0]]);
+                    this.render.setRightPage(null);
+                } else {
+                    this.render.setLeftPage(null);
+                    this.render.setRightPage(this.pages[spread[0]]);
+                }
+            } else {
+                this.render.setLeftPage(null);
+                this.render.setRightPage(this.pages[spread[0]]);
+            }
+        }
+
+        // ❌ 상태 업데이트 없음
+        // ❌ 이벤트 발생 없음
     }
 }
