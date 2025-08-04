@@ -102,10 +102,31 @@ export abstract class PageCollection {
     }
 
     /**
-     * Get the total number of pages
+     * Get the total number of pages (considering cover mode and orientation)
      */
     public getPageCount(): number {
-        return this.pages.length;
+        if (!this.totalVirtualPages) {
+            // 일반 모드: DOM 페이지 수 그대로
+            return this.pages.length;
+        }
+
+        // 가상화 모드: 표지 설정과 모드에 따른 계산
+        let virtualPages = this.totalVirtualPages;
+
+        if (this.render.getOrientation() === Orientation.PORTRAIT) {
+            // Portrait: 한 페이지씩 보이므로 그대로
+            return virtualPages;
+        } else {
+            // Landscape: 두 페이지씩 보이므로 절반
+            virtualPages = Math.ceil(this.totalVirtualPages / 2);
+
+            // showCover가 true면 첫 페이지(표지)는 혼자 표시되므로 +1
+            if (this.isShowCover) {
+                virtualPages += 1;
+            }
+        }
+
+        return virtualPages;
     }
 
     /**
@@ -211,7 +232,7 @@ export abstract class PageCollection {
      * 정상구간이 기존 로직, 이외의 부분 진수 추가 25.08.04
      */
     public showNext(): void {
-        const maxPages = this.totalVirtualPages || this.pages.length;
+        const maxPages = this.getPageCount(); // getPageCount() 사용으로 통일
         if (this.realPageIndex < maxPages - 1) {
             this.realPageIndex++; // 실제 페이지 인덱스 증가
 
@@ -328,7 +349,7 @@ export abstract class PageCollection {
      * Get the middle index for loop (중간 위치 계산)
      */
     private getLoopCenterIndex(): number {
-        return Math.floor(this.pages.length / 2);
+        return Math.floor(this.getSpread().length / 2);
     }
 
     /**

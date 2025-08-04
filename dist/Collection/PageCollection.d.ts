@@ -47,7 +47,7 @@ export declare abstract class PageCollection {
      */
     getSpreadIndexByPage(pageNum: number): number;
     /**
-     * Get the total number of pages
+     * Get the total number of pages (considering cover mode and orientation)
      */
     getPageCount(): number;
     /**
