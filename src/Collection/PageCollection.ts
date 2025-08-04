@@ -211,13 +211,13 @@ export abstract class PageCollection {
      */
     public showNext(): void {
         if (this.currentSpreadIndex < this.getSpread().length) {
-            if (this.currentSpreadIndex === 3) {
+            if (this.currentSpreadIndex >= 3) {
                 this.showSpread();
             } else {
+                this.currentSpreadIndex++;
+                this.realPageIndex++; // 실제 페이지 추적
+                this.showSpread();
             }
-            this.currentSpreadIndex++;
-            this.realPageIndex++; // 실제 페이지 추적
-            this.showSpread();
         }
     }
 
