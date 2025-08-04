@@ -297,6 +297,7 @@ export abstract class PageCollection {
      */
     public loopShow(): void {
         const spreadIndex = this.getSpreadIndexByPage(this.currentPageIndex);
+        console.log('이게 문제니', this.currentPageIndex);
         if (spreadIndex !== null) {
             // 🔥 상태 변경 없이 화면만 표시
             this.showSpreadSilently(spreadIndex);
