@@ -20,16 +20,16 @@ export declare abstract class PageCollection {
     protected landscapeSpread: NumberArray[];
     /**  One-page spread in portrait mode */
     protected portraitSpread: NumberArray[];
-    /** 가상화 모드 활성화 여부 */
-    protected isVirtualMode: boolean;
-    /** 논리적 현재 페이지 인덱스 (가상화 모드에서 사용) */
-    protected virtualCurrentPageIndex: number;
-    protected virtualSpreadMap: {
-        start: number[];
-        middle: number[];
-        end: number[];
-        threshold: number;
-    };
+    /** 가상화 로직을 위해 진수 추가 25.08.05 */
+    protected virtualPageIndex: number;
+    protected virtualSpreadIndex: number;
+    protected virtualLandscapeSpread: NumberArray[];
+    protected virtualPortraitSpread: NumberArray[];
+    protected totalVirtualPages: number;
+    /** 루프 존 관련 캐시 */
+    protected loopZoneStart: number;
+    protected loopZoneEnd: number;
+    protected loopSpreadIndex: number;
     protected constructor(app: PageFlip, render: Render);
     /**
      * Load pages
@@ -44,17 +44,9 @@ export declare abstract class PageCollection {
      */
     protected createSpread(): void;
     /**
-     * 🎯 가상화 스프레드 매핑 설정
-     */
-    private setupVirtualSpreadMapping;
-    /**
-     * 🎯 가상 페이지 인덱스에 해당하는 실제 스프레드 인덱스 반환
-     */
-    private getVirtualSpreadIndex;
-    /**
      * Get spread by mode (portrait or landscape)
      */
-    protected getSpread(): NumberArray[];
+    protected getSpread(useVirtual?: boolean): NumberArray[];
     /**
      * Get spread index by page number
      *
@@ -108,7 +100,7 @@ export declare abstract class PageCollection {
      */
     showPrev(): void;
     /**
-     * Get the number of the current page in list
+     * Get the number of the current spread in book
      */
     getCurrentPageIndex(): number;
     /**
@@ -127,16 +119,18 @@ export declare abstract class PageCollection {
      */
     setCurrentSpreadIndex(newIndex: number): void;
     /**
-     * 🎯 가상화 모드 상태 반환
-     */
-    isVirtualization(): boolean;
-    /**
-     * 🎯 가상 페이지 인덱스 설정 (외부에서 호출 가능)
-     */
-    setVirtualPageIndex(pageIndex: number): void;
-    /**
      * Show current spread
      */
     private showSpread;
+    /** 루프 존 계산 및 캐싱 */
+    private calculateLoopZone;
+    /** 루프 존 체크 (최적화됨) */
+    isInLoopZone(): boolean;
+    /**
+     * Get spread index by page number
+     *
+     * @param {number} pageNum - page index
+     */
+    getVirtualSpreadIndexByPage(pageNum: number): number;
 }
 export {};

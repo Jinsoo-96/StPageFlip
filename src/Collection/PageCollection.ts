@@ -25,24 +25,17 @@ export abstract class PageCollection {
     /**  One-page spread in portrait mode */
     protected portraitSpread: NumberArray[] = [];
 
-    // 🎯 가상화 관련 프로퍼티
-    /** 가상화 모드 활성화 여부 */
-    protected isVirtualMode = false;
-    /** 논리적 현재 페이지 인덱스 (가상화 모드에서 사용) */
-    protected virtualCurrentPageIndex = 0;
-
-    // 🎯 가상화 스프레드 매핑 (개선)
-    protected virtualSpreadMap: {
-        start: number[]; // 시작 부분 스프레드 인덱스들
-        middle: number[]; // 중간 재사용 스프레드 인덱스들
-        end: number[]; // 끝 부분 스프레드 인덱스들
-        threshold: number; // 시작/끝 임계값
-    } = {
-        start: [],
-        middle: [],
-        end: [],
-        threshold: 0,
-    };
+    /** 가상화 로직을 위해 진수 추가 25.08.05 */
+    protected virtualPageIndex = 0; // 현재 가상 페이지 인덱스
+    protected virtualSpreadIndex = 0; // 현재 가상 스프레드 인덱스
+    protected virtualLandscapeSpread: NumberArray[] = [];
+    protected virtualPortraitSpread: NumberArray[] = [];
+    protected totalVirtualPages = 0; // 전체 가상 페이지 수
+    /** 루프 존 관련 캐시 */
+    protected loopZoneStart = 0;
+    protected loopZoneEnd = 0;
+    // protected hasLoopZone = false;
+    protected loopSpreadIndex = 0;
 
     protected constructor(app: PageFlip, render: Render) {
         this.render = render;
@@ -51,8 +44,7 @@ export abstract class PageCollection {
         this.currentPageIndex = 0;
         this.isShowCover = this.app.getSettings().showCover;
 
-        // 🎯 가상화 모드 초기화
-        this.isVirtualMode = !!this.app.getSettings().totalVirtualPages;
+        this.totalVirtualPages = this.app.getSettings().totalVirtualPages;
     }
 
     /**
@@ -93,116 +85,23 @@ export abstract class PageCollection {
             }
         }
 
-        // 🎯 가상화 모드에서 스프레드 매핑 계산
-        if (this.isVirtualMode) {
-            this.setupVirtualSpreadMapping();
-            console.log('이걸 봐야함', this.virtualSpreadMap);
-        }
-    }
-
-    /**
-     * 🎯 가상화 스프레드 매핑 설정
-     */
-    private setupVirtualSpreadMapping(): void {
-        const spread = this.getSpread();
-        const totalVirtualPages = this.app.getSettings().totalVirtualPages || 0;
-
-        if (this.render.getOrientation() === Orientation.PORTRAIT) {
-            // Portrait 모드: 처음 3개, 마지막 3개는 그대로, 중간은 재사용
-            const startCount = Math.min(3, Math.floor(this.pages.length / 3));
-            const endCount = Math.min(3, Math.floor(this.pages.length / 3));
-            const middleIndex = Math.floor(this.pages.length / 2);
-
-            this.virtualSpreadMap = {
-                start: Array.from({ length: startCount }, (_, i) => i),
-                middle: [middleIndex],
-                end: Array.from({ length: endCount }, (_, i) => this.pages.length - endCount + i),
-                threshold: startCount,
-            };
-        } else {
-            // Landscape 모드: 처음 2개, 마지막 2개 스프레드는 그대로
-            if (spread.length >= 5) {
-                const startSpreads = 2;
-                const endSpreads = 2;
-                const middleIndex = Math.floor(spread.length / 2);
-
-                this.virtualSpreadMap = {
-                    start: [0, 1],
-                    middle: [middleIndex],
-                    end: [spread.length - 2, spread.length - 1],
-                    threshold: 4, // 처음 4페이지 (2개 스프레드)
-                };
-            } else {
-                // 스프레드가 적은 경우 전체 사용
-                this.virtualSpreadMap = {
-                    start: Array.from({ length: spread.length }, (_, i) => i),
-                    middle: [],
-                    end: [],
-                    threshold: totalVirtualPages,
-                };
-            }
-        }
-    }
-
-    /**
-     * 🎯 가상 페이지 인덱스에 해당하는 실제 스프레드 인덱스 반환
-     */
-    private getVirtualSpreadIndex(virtualPageIndex: number): number {
-        const totalVirtualPages = this.app.getSettings().totalVirtualPages || 0;
-        const spread = this.getSpread();
-
-        // Portrait 모드
-        if (this.render.getOrientation() === Orientation.PORTRAIT) {
-            // 시작 부분
-            if (virtualPageIndex < this.virtualSpreadMap.start.length) {
-                return this.virtualSpreadMap.start[virtualPageIndex];
-            }
-
-            // 끝 부분
-            const endStartIndex = totalVirtualPages - this.virtualSpreadMap.end.length;
-            if (virtualPageIndex >= endStartIndex) {
-                const endIndex = virtualPageIndex - endStartIndex;
-                return this.virtualSpreadMap.end[endIndex];
-            }
-
-            // 중간 부분
-            return this.virtualSpreadMap.middle[0];
-        }
-
-        // Landscape 모드
-        // 시작 부분 (처음 몇 페이지)
-        if (virtualPageIndex < this.virtualSpreadMap.threshold) {
-            const spreadIndex =
-                this.isShowCover && virtualPageIndex === 0
-                    ? 0
-                    : Math.floor((virtualPageIndex + (this.isShowCover ? 0 : 1)) / 2);
-            if (spreadIndex < this.virtualSpreadMap.start.length) {
-                return this.virtualSpreadMap.start[spreadIndex];
-            }
-        }
-
-        // 끝 부분 (마지막 몇 페이지)
-        const endThreshold = totalVirtualPages - this.virtualSpreadMap.threshold;
-        if (virtualPageIndex >= endThreshold) {
-            const pagesFromEnd = totalVirtualPages - virtualPageIndex;
-            if (pagesFromEnd <= 4) {
-                // 마지막 4페이지
-                const endSpreadIndex = pagesFromEnd <= 2 ? spread.length - 1 : spread.length - 2;
-                return Math.max(0, endSpreadIndex);
-            }
-        }
-
-        // 중간 부분 (재사용)
-        return this.virtualSpreadMap.middle[0];
+        // 루프 존 계산 (스프레드 생성 후)
+        this.calculateLoopZone();
     }
 
     /**
      * Get spread by mode (portrait or landscape)
      */
-    protected getSpread(): NumberArray[] {
-        return this.render.getOrientation() === Orientation.LANDSCAPE
-            ? this.landscapeSpread
-            : this.portraitSpread;
+    protected getSpread(useVirtual: boolean = false): NumberArray[] {
+        if (useVirtual) {
+            return this.render.getOrientation() === Orientation.LANDSCAPE
+                ? this.virtualLandscapeSpread
+                : this.virtualPortraitSpread;
+        } else {
+            return this.render.getOrientation() === Orientation.LANDSCAPE
+                ? this.landscapeSpread
+                : this.portraitSpread;
+        }
     }
 
     /**
@@ -211,12 +110,8 @@ export abstract class PageCollection {
      * @param {number} pageNum - page index
      */
     public getSpreadIndexByPage(pageNum: number): number {
-        // 🎯 가상화 모드에서는 가상 스프레드 인덱스 반환
-        if (this.isVirtualMode) {
-            return this.getVirtualSpreadIndex(pageNum);
-        }
-
         const spread = this.getSpread();
+
         for (let i = 0; i < spread.length; i++)
             if (pageNum === spread[i][0] || pageNum === spread[i][1]) return i;
 
@@ -227,10 +122,6 @@ export abstract class PageCollection {
      * Get the total number of pages
      */
     public getPageCount(): number {
-        // 🎯 가상화 모드에서는 가상 페이지 수 반환
-        if (this.isVirtualMode) {
-            return this.app.getSettings().totalVirtualPages;
-        }
         return this.pages.length;
     }
 
@@ -286,23 +177,6 @@ export abstract class PageCollection {
      * @param {FlipDirection} direction
      */
     public getFlippingPage(direction: FlipDirection): Page {
-        // 🎯 가상화 모드
-        if (this.isVirtualMode) {
-            const currentSpreadIndex = this.getVirtualSpreadIndex(this.virtualCurrentPageIndex);
-            const spread = this.getSpread()[currentSpreadIndex];
-
-            if (this.render.getOrientation() === Orientation.PORTRAIT) {
-                return this.pages[spread[0]].newTemporaryCopy();
-            } else {
-                if (spread.length === 1) return this.pages[spread[0]];
-
-                return direction === FlipDirection.FORWARD
-                    ? this.pages[spread[0]]
-                    : this.pages[spread[1]];
-            }
-        }
-
-        // 기존 로직
         const current = this.currentSpreadIndex;
 
         if (this.render.getOrientation() === Orientation.PORTRAIT) {
@@ -329,34 +203,6 @@ export abstract class PageCollection {
      * @param {FlipDirection}  direction
      */
     public getBottomPage(direction: FlipDirection): Page {
-        // 🎯 가상화 모드
-        if (this.isVirtualMode) {
-            const increment = this.render.getOrientation() === Orientation.PORTRAIT ? 1 : 2;
-            const nextVirtualIndex =
-                direction === FlipDirection.FORWARD
-                    ? this.virtualCurrentPageIndex + increment
-                    : this.virtualCurrentPageIndex - increment;
-
-            // 범위 체크
-            if (nextVirtualIndex < 0 || nextVirtualIndex >= this.getPageCount()) {
-                return null;
-            }
-
-            const nextSpreadIndex = this.getVirtualSpreadIndex(nextVirtualIndex);
-            const spread = this.getSpread()[nextSpreadIndex];
-
-            if (this.render.getOrientation() === Orientation.PORTRAIT) {
-                return this.pages[spread[0]];
-            } else {
-                if (spread.length === 1) return this.pages[spread[0]];
-
-                // Landscape에서 가상 페이지 인덱스가 홀수인 경우 처리
-                const pageInSpread = nextVirtualIndex % 2;
-                return this.pages[spread[pageInSpread]];
-            }
-        }
-
-        // 기존 로직
         const current = this.currentSpreadIndex;
 
         if (this.render.getOrientation() === Orientation.PORTRAIT) {
@@ -381,22 +227,22 @@ export abstract class PageCollection {
      * Show next spread
      */
     public showNext(): void {
-        // 🎯 가상화 모드
-        if (this.isVirtualMode) {
-            const totalPages = this.app.getSettings().totalVirtualPages;
-            const increment = this.render.getOrientation() === Orientation.PORTRAIT ? 1 : 2;
-
-            if (this.virtualCurrentPageIndex < totalPages - increment) {
-                this.virtualCurrentPageIndex += increment;
-                this.app.updatePageIndex(this.virtualCurrentPageIndex);
+        if (this.totalVirtualPages) {
+            if (this.isInLoopZone()) {
+                this.virtualSpreadIndex++;
+                this.showSpread();
+            } else {
+                if (this.virtualSpreadIndex < this.getSpread(true).length) {
+                    this.currentSpreadIndex++;
+                    this.virtualSpreadIndex++;
+                    this.showSpread();
+                }
             }
-            return;
-        }
-
-        // 기존 로직
-        if (this.currentSpreadIndex < this.getSpread().length - 1) {
-            this.currentSpreadIndex++;
-            this.showSpread();
+        } else {
+            if (this.currentSpreadIndex < this.getSpread().length) {
+                this.currentSpreadIndex++;
+                this.showSpread();
+            }
         }
     }
 
@@ -404,30 +250,31 @@ export abstract class PageCollection {
      * Show prev spread
      */
     public showPrev(): void {
-        // 🎯 가상화 모드
-        if (this.isVirtualMode) {
-            const increment = this.render.getOrientation() === Orientation.PORTRAIT ? 1 : 2;
-
-            if (this.virtualCurrentPageIndex >= increment) {
-                this.virtualCurrentPageIndex -= increment;
-                this.app.updatePageIndex(this.virtualCurrentPageIndex);
+        if (this.totalVirtualPages) {
+            if (this.isInLoopZone()) {
+                this.virtualSpreadIndex--;
+                this.showSpread();
+            } else {
+                if (this.virtualSpreadIndex > 0) {
+                    this.currentSpreadIndex--;
+                    this.virtualSpreadIndex--;
+                    this.showSpread();
+                }
             }
-            return;
-        }
+        } else {
+            if (this.currentSpreadIndex > 0) {
+                this.currentSpreadIndex--;
 
-        // 기존 로직
-        if (this.currentSpreadIndex > 0) {
-            this.currentSpreadIndex--;
-            this.showSpread();
+                this.showSpread();
+            }
         }
     }
 
     /**
-     * Get the number of the current page in list
+     * Get the number of the current spread in book
      */
     public getCurrentPageIndex(): number {
-        // 🎯 가상화 모드에서는 가상 페이지 인덱스 반환
-        return this.isVirtualMode ? this.virtualCurrentPageIndex : this.currentPageIndex;
+        return this.currentPageIndex;
     }
 
     /**
@@ -435,26 +282,14 @@ export abstract class PageCollection {
      * @param {number} pageNum - Page index (from 0s)
      */
     public show(pageNum: number = null): void {
-        // 🎯 가상화 모드
-        if (this.isVirtualMode) {
-            if (pageNum === null) pageNum = this.virtualCurrentPageIndex;
-
-            const totalPages = this.app.getSettings().totalVirtualPages;
-            if (pageNum < 0 || pageNum >= totalPages) return;
-
-            this.virtualCurrentPageIndex = pageNum;
-            const virtualSpreadIndex = this.getVirtualSpreadIndex(pageNum);
-            this.currentSpreadIndex = virtualSpreadIndex;
-            this.showSpread();
-            return;
-        }
-
-        // 기존 로직
         if (pageNum === null) pageNum = this.currentPageIndex;
 
         if (pageNum < 0 || pageNum >= this.pages.length) return;
 
-        const spreadIndex = this.getSpreadIndexByPage(pageNum);
+        const spreadIndex = this.totalVirtualPages
+            ? this.getVirtualSpreadIndexByPage(pageNum)
+            : this.getSpreadIndexByPage(pageNum);
+
         if (spreadIndex !== null) {
             this.currentSpreadIndex = spreadIndex;
             this.showSpread();
@@ -465,10 +300,6 @@ export abstract class PageCollection {
      * Index of the current page in list
      */
     public getCurrentSpreadIndex(): number {
-        // 🎯 가상화 모드에서는 현재 가상 페이지의 스프레드 인덱스 반환
-        if (this.isVirtualMode) {
-            return this.getVirtualSpreadIndex(this.virtualCurrentPageIndex);
-        }
         return this.currentSpreadIndex;
     }
 
@@ -478,11 +309,6 @@ export abstract class PageCollection {
      * @param {number} newIndex - new spread index
      */
     public setCurrentSpreadIndex(newIndex: number): void {
-        // 🎯 가상화 모드에서는 무시
-        if (this.isVirtualMode) {
-            return;
-        }
-
         if (newIndex >= 0 && newIndex < this.getSpread().length) {
             this.currentSpreadIndex = newIndex;
         } else {
@@ -491,29 +317,10 @@ export abstract class PageCollection {
     }
 
     /**
-     * 🎯 가상화 모드 상태 반환
-     */
-    public isVirtualization(): boolean {
-        return this.isVirtualMode;
-    }
-
-    /**
-     * 🎯 가상 페이지 인덱스 설정 (외부에서 호출 가능)
-     */
-    public setVirtualPageIndex(pageIndex: number): void {
-        if (!this.isVirtualMode) return;
-
-        const totalPages = this.app.getSettings().totalVirtualPages;
-        if (pageIndex >= 0 && pageIndex < totalPages) {
-            this.virtualCurrentPageIndex = pageIndex;
-        }
-    }
-
-    /**
      * Show current spread
      */
     private showSpread(): void {
-        const spread = this.getSpread()[this.currentSpreadIndex];
+        const spread = this.getSpread()[this.currentSpreadIndex]; // 이부분은 무한루프 만들어야해서 가상화 인덱스 사용안함.
 
         if (spread.length === 2) {
             this.render.setLeftPage(this.pages[spread[0]]);
@@ -533,12 +340,86 @@ export abstract class PageCollection {
             }
         }
 
-        // 🎯 가상화 모드에서는 가상 페이지 인덱스 사용
-        if (this.isVirtualMode) {
-            this.app.updatePageIndex(this.virtualCurrentPageIndex);
+        this.currentPageIndex = spread[0];
+
+        if (this.totalVirtualPages) {
+            const virtualSpread = this.getSpread(true)[this.virtualSpreadIndex]; // 실제 보여주진 않지만 가상화 인덱스 계산을 위해
+            this.virtualPageIndex = virtualSpread[0]; // 가상화 사용시 활성화 될꺼임 아마
+            this.app.updatePageIndex(this.virtualPageIndex);
         } else {
-            this.currentPageIndex = spread[0];
             this.app.updatePageIndex(this.currentPageIndex);
         }
+    }
+
+    /** 루프 존 계산 및 캐싱 */
+    private calculateLoopZone(): void {
+        if (!this.totalVirtualPages) {
+            return;
+        }
+        this.virtualLandscapeSpread = [];
+        this.virtualPortraitSpread = [];
+
+        for (let i = 0; i < this.totalVirtualPages; i++) {
+            this.virtualPortraitSpread.push([i]);
+        }
+
+        for (let i = 0; i < this.totalVirtualPages; i += 2) {
+            this.virtualLandscapeSpread.push([i, i + 1]);
+        }
+
+        const realSpreadCount = this.getSpread(false).length;
+        const virtualSpreadCount = this.getSpread(true).length;
+
+        // this.hasLoopZone = virtualSpreadCount > realSpreadCount;
+
+        // if (this.hasLoopZone) {
+        // const centerIndex = Math.floor(realSpreadCount / 2);
+        this.loopSpreadIndex = Math.floor(realSpreadCount / 2);
+        this.loopZoneStart = this.loopSpreadIndex;
+        this.loopZoneEnd = virtualSpreadCount - this.loopSpreadIndex;
+        // }
+    }
+
+    /** 루프 존 체크 (최적화됨) */
+    public isInLoopZone(): boolean {
+        if (!this.totalVirtualPages) return false;
+
+        return (
+            this.virtualSpreadIndex >= this.loopZoneStart &&
+            this.virtualSpreadIndex < this.loopZoneEnd
+            // this.virtualSpreadIndex >= this.loopSpreadIndex &&
+            // this.virtualSpreadIndex < this.loopSpreadIndex
+        );
+    }
+
+    /**
+     * Get spread index by page number
+     *
+     * @param {number} pageNum - page index
+     */
+    public getVirtualSpreadIndexByPage(pageNum: number): number {
+        const spread = this.getSpread();
+        const virtualSpread = this.getSpread(true);
+        let virtualSpreadLength = 0;
+
+        // 루프존 로직 검토해야 하긴 함
+        // 2. 루프 존이라면, 중앙에 해당하는 스프레드 인덱스를 반환합니다.
+
+        for (let i = 0; i < this.loopZoneStart; i++)
+            if (pageNum === spread[i][0] || pageNum === spread[i][1]) return i;
+
+        virtualSpreadLength = virtualSpread.length;
+        if (this.loopZoneStart <= pageNum && pageNum < virtualSpreadLength) {
+            return this.loopSpreadIndex;
+        }
+
+        let lastTrace = 0;
+        for (let i = virtualSpreadLength; this.loopZoneEnd < i; i--) {
+            if (pageNum === virtualSpread[i][0] || pageNum === virtualSpread[i][1])
+                return spread.length - lastTrace;
+            lastTrace++;
+        }
+
+        return null;
     }
 }
