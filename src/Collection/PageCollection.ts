@@ -389,12 +389,11 @@ export abstract class PageCollection {
         console.log('펼침 배열', this.virtualLandscapeSpread);
         console.log('접힘 배열', this.virtualPortraitSpread);
         console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
+        console.log('실제 물리 페이지', this.currentPageIndex);
 
         return (
-            this.virtualSpreadIndex >= this.loopZoneStart &&
+            this.virtualSpreadIndex > this.loopZoneStart && // >=
             this.virtualSpreadIndex < this.loopZoneEnd
-            // this.virtualSpreadIndex >= this.loopSpreadIndex &&
-            // this.virtualSpreadIndex < this.loopSpreadIndex
         );
     }
 
