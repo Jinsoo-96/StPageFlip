@@ -247,13 +247,10 @@ export abstract class PageCollection {
         });
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
-                console.log('루프존 브랜치 실행');
                 this.virtualSpreadIndex++;
                 this.showSpread();
             } else {
                 if (this.virtualSpreadIndex < this.getSpread(true).length) {
-                    // 문제 있으면 -1 추가 해야할지도?
-                    console.log('일반 브랜치 실행');
                     this.currentSpreadIndex++;
                     this.virtualSpreadIndex++;
                     this.showSpread();
@@ -271,6 +268,13 @@ export abstract class PageCollection {
      * Show prev spread
      */
     public showPrev(): void {
+        console.log('showPrev 시작:', {
+            totalVirtualPages: this.totalVirtualPages,
+            isInLoopZone: this.isInLoopZone(),
+            currentSpreadIndex: this.currentSpreadIndex,
+            virtualSpreadIndex: this.virtualSpreadIndex,
+            orientation: this.render.getOrientation(),
+        });
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
                 this.virtualSpreadIndex--;
@@ -415,12 +419,8 @@ export abstract class PageCollection {
             loopZoneEnd = this.portraitLoopZone.end;
         }
 
-        console.log('현재 가상 페이지 인덱스', this.virtualPageIndex);
-        console.log('현재 가상 스프레드 인덱스', this.virtualSpreadIndex);
-        console.log('펼침 배열', this.virtualLandscapeSpread);
-        console.log('접힘 배열', this.virtualPortraitSpread);
         console.log('루프존 시작', loopZoneStart, '끝', loopZoneEnd);
-        console.log('실제 물리 페이지', this.currentPageIndex);
+
         return (
             this.virtualSpreadIndex >= loopZoneStart && // >=
             this.virtualSpreadIndex < loopZoneEnd
