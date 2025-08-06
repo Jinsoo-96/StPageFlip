@@ -27,9 +27,17 @@ export declare abstract class PageCollection {
     protected virtualPortraitSpread: NumberArray[];
     protected totalVirtualPages: number;
     /** 루프 존 관련 캐시 */
-    protected loopZoneStart: number;
-    protected loopZoneEnd: number;
-    protected loopSpreadIndex: number;
+    /** 루프 존 관련 캐시 - orientation별로 분리 */
+    protected portraitLoopZone: {
+        start: number;
+        end: number;
+        centerIndex: number;
+    };
+    protected landscapeLoopZone: {
+        start: number;
+        end: number;
+        centerIndex: number;
+    };
     protected constructor(app: PageFlip, render: Render);
     /**
      * Load pages
@@ -124,13 +132,26 @@ export declare abstract class PageCollection {
     private showSpread;
     /** 루프 존 계산 및 캐싱 */
     private calculateLoopZone;
-    /** 루프 존 체크 (최적화됨) */
+    /** 가상 스프레드 생성 */
+    private createVirtualSpreads;
+    /** 루프 존 체크 - orientation별로 구분 */
     isInLoopZone(): boolean;
     /**
      * Get spread index by page number
      *
      * @param {number} pageNum - page index
      */
+    /** 가상 페이지 번호로 스프레드 인덱스 찾기 - 개선된 버전 */
     getVirtualSpreadIndexByPage(pageNum: number): number;
+    /** 페이지가 해당 스프레드에 포함되는지 확인 */
+    private isPageInSpread;
+    /** 가상 스프레드 인덱스를 실제 스프레드 인덱스로 변환 */
+    private getRealSpreadIndex;
+    /** 전체 가상 페이지 수 반환 */
+    private getVirtualPageCount;
+    /** 현재 가상 스프레드 인덱스 반환 */
+    getVirtualSpreadIndex(): number;
+    /** 가상 스프레드 인덱스 설정 */
+    setVirtualSpreadIndex(index: number): void;
 }
 export {};
