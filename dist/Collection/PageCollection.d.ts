@@ -91,9 +91,13 @@ export declare abstract class PageCollection {
      * @param {FlipDirection}  direction
      */
     getBottomPage(direction: FlipDirection): Page;
-    private canMoveInDirection;
-    private moveSpread;
+    /**
+     * Show next spread
+     */
     showNext(): void;
+    /**
+     * Show prev spread
+     */
     showPrev(): void;
     /**
      * Get the number of the current spread in book

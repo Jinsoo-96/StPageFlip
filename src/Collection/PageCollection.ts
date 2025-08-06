@@ -222,46 +222,61 @@ export abstract class PageCollection {
         }
     }
 
-    private canMoveInDirection(direction: 1 | -1): boolean {
-        if (this.totalVirtualPages) {
-            if (this.isInLoopZone()) {
-                return true; // 루프존에서는 항상 이동 가능
-            } else {
-                const newVirtualIndex = this.virtualSpreadIndex + direction;
-                return newVirtualIndex >= 0 && newVirtualIndex < this.getSpread(true).length;
-            }
-        } else {
-            const newIndex = this.currentSpreadIndex + direction;
-            return newIndex >= 0 && newIndex < this.getSpread().length;
-        }
-    }
-
-    private moveSpread(direction: 1 | -1): void {
-        if (!this.canMoveInDirection(direction)) return;
-
-        if (this.totalVirtualPages) {
-            if (this.isInLoopZone()) {
-                // 루프존: virtual만 변경
-                this.virtualSpreadIndex += direction;
-            } else {
-                // 일반구간: 둘 다 변경
-                this.currentSpreadIndex += direction;
-                this.virtualSpreadIndex += direction;
-            }
-        } else {
-            // 가상화 없음: current만 변경
-            this.currentSpreadIndex += direction;
-        }
-
-        this.showSpread();
-    }
-
+    /**
+     * Show next spread
+     */
     public showNext(): void {
-        this.moveSpread(1);
+        console.log('showNext 시작:', {
+            totalVirtualPages: this.totalVirtualPages,
+            isInLoopZone: this.isInLoopZone(),
+            currentSpreadIndex: this.currentSpreadIndex,
+            virtualSpreadIndex: this.virtualSpreadIndex,
+            orientation: this.render.getOrientation(),
+        });
+        if (this.totalVirtualPages) {
+            if (this.isInLoopZone()) {
+                console.log('루프존 브랜치 실행');
+                this.virtualSpreadIndex++;
+                this.showSpread();
+            } else {
+                if (this.virtualSpreadIndex < this.getSpread(true).length) {
+                    // 문제 있으면 -1 추가 해야할지도?
+                    console.log('일반 브랜치 실행');
+                    this.currentSpreadIndex++;
+                    this.virtualSpreadIndex++;
+                    this.showSpread();
+                }
+            }
+        } else {
+            if (this.currentSpreadIndex < this.getSpread().length) {
+                this.currentSpreadIndex++;
+                this.showSpread();
+            }
+        }
     }
 
+    /**
+     * Show prev spread
+     */
     public showPrev(): void {
-        this.moveSpread(-1);
+        if (this.totalVirtualPages) {
+            if (this.isInLoopZone()) {
+                this.virtualSpreadIndex--;
+                this.showSpread();
+            } else {
+                if (this.virtualSpreadIndex > 0) {
+                    this.currentSpreadIndex--;
+                    this.virtualSpreadIndex--;
+                    this.showSpread();
+                }
+            }
+        } else {
+            if (this.currentSpreadIndex > 0) {
+                this.currentSpreadIndex--;
+
+                this.showSpread();
+            }
+        }
     }
 
     /**
@@ -377,17 +392,10 @@ export abstract class PageCollection {
     /** 루프 존 체크 (최적화됨) */
     public isInLoopZone(): boolean {
         if (!this.totalVirtualPages) return false;
-        console.log('지금 모드', this.render.getOrientation());
-        console.log('현재 가상 페이지 인덱스', this.virtualPageIndex);
-        console.log('현재 가상 스프레드 인덱스', this.virtualSpreadIndex);
-        console.log('펼침 배열', this.virtualLandscapeSpread);
-        console.log('접힘 배열', this.virtualPortraitSpread);
-        console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
-        console.log('실제 물리 페이지', this.currentPageIndex);
 
         return (
             this.virtualSpreadIndex >= this.loopZoneStart && // >=
-            this.virtualSpreadIndex <= this.loopZoneEnd
+            this.virtualSpreadIndex < this.loopZoneEnd
         );
     }
 
@@ -416,7 +424,7 @@ export abstract class PageCollection {
         for (let i = virtualSpreadLength - 1; i >= this.loopZoneEnd; i--) {
             // 배열 길이가 5면 인덱스는 0~4인데, 5부터 시작함 그래서 -1
             if (pageNum === virtualSpread[i][0] || pageNum === virtualSpread[i][1])
-                return spread.length - lastTrace;
+                spread.length - lastTrace - 1;
             lastTrace++;
         }
 
