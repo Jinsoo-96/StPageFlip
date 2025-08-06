@@ -238,22 +238,29 @@ export abstract class PageCollection {
      * Show next spread
      */
     public showNext(): void {
-        console.log('showNext 시작:', {
-            totalVirtualPages: this.totalVirtualPages,
-            isInLoopZone: this.isInLoopZone(),
-            currentSpreadIndex: this.currentSpreadIndex,
-            virtualSpreadIndex: this.virtualSpreadIndex,
-            orientation: this.render.getOrientation(),
-        });
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
                 this.virtualSpreadIndex++;
                 this.showSpread();
+                console.log('showNext 시작:', {
+                    totalVirtualPages: this.totalVirtualPages,
+                    isInLoopZone: this.isInLoopZone(),
+                    currentSpreadIndex: this.currentSpreadIndex,
+                    virtualSpreadIndex: this.virtualSpreadIndex,
+                    orientation: this.render.getOrientation(),
+                });
             } else {
-                if (this.virtualSpreadIndex < this.getSpread(true).length - 1) {
+                if (this.virtualSpreadIndex < this.getSpread(true).length) {
                     this.currentSpreadIndex++;
                     this.virtualSpreadIndex++;
                     this.showSpread();
+                    console.log('showNext 시작:', {
+                        totalVirtualPages: this.totalVirtualPages,
+                        isInLoopZone: this.isInLoopZone(),
+                        currentSpreadIndex: this.currentSpreadIndex,
+                        virtualSpreadIndex: this.virtualSpreadIndex,
+                        orientation: this.render.getOrientation(),
+                    });
                 }
             }
         } else {
@@ -268,22 +275,29 @@ export abstract class PageCollection {
      * Show prev spread
      */
     public showPrev(): void {
-        console.log('showPrev 시작:', {
-            totalVirtualPages: this.totalVirtualPages,
-            isInLoopZone: this.isInLoopZone(),
-            currentSpreadIndex: this.currentSpreadIndex,
-            virtualSpreadIndex: this.virtualSpreadIndex,
-            orientation: this.render.getOrientation(),
-        });
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
                 this.virtualSpreadIndex--;
                 this.showSpread();
+                console.log('showPrev 시작:', {
+                    totalVirtualPages: this.totalVirtualPages,
+                    isInLoopZone: this.isInLoopZone(),
+                    currentSpreadIndex: this.currentSpreadIndex,
+                    virtualSpreadIndex: this.virtualSpreadIndex,
+                    orientation: this.render.getOrientation(),
+                });
             } else {
                 if (this.virtualSpreadIndex > 0) {
                     this.currentSpreadIndex--;
                     this.virtualSpreadIndex--;
                     this.showSpread();
+                    console.log('showPrev 시작:', {
+                        totalVirtualPages: this.totalVirtualPages,
+                        isInLoopZone: this.isInLoopZone(),
+                        currentSpreadIndex: this.currentSpreadIndex,
+                        virtualSpreadIndex: this.virtualSpreadIndex,
+                        orientation: this.render.getOrientation(),
+                    });
                 }
             }
         } else {
