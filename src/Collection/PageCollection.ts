@@ -222,52 +222,46 @@ export abstract class PageCollection {
         }
     }
 
-    /**
-     * Show next spread
-     */
-    public showNext(): void {
+    private canMoveInDirection(direction: 1 | -1): boolean {
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
-                this.virtualSpreadIndex++;
-                this.showSpread();
+                return true; // 루프존에서는 항상 이동 가능
             } else {
-                if (this.virtualSpreadIndex < this.getSpread(true).length) {
-                    // 문제 있으면 -1 추가 해야할지도?
-                    this.currentSpreadIndex++;
-                    this.virtualSpreadIndex++;
-                    this.showSpread();
-                }
+                const newVirtualIndex = this.virtualSpreadIndex + direction;
+                return newVirtualIndex >= 0 && newVirtualIndex < this.getSpread(true).length;
             }
         } else {
-            if (this.currentSpreadIndex < this.getSpread().length) {
-                this.currentSpreadIndex++;
-                this.showSpread();
-            }
+            const newIndex = this.currentSpreadIndex + direction;
+            return newIndex >= 0 && newIndex < this.getSpread().length;
         }
     }
 
-    /**
-     * Show prev spread
-     */
-    public showPrev(): void {
+    private moveSpread(direction: 1 | -1): void {
+        if (!this.canMoveInDirection(direction)) return;
+
         if (this.totalVirtualPages) {
             if (this.isInLoopZone()) {
-                this.virtualSpreadIndex--;
-                this.showSpread();
+                // 루프존: virtual만 변경
+                this.virtualSpreadIndex += direction;
             } else {
-                if (this.virtualSpreadIndex > 0) {
-                    this.currentSpreadIndex--;
-                    this.virtualSpreadIndex--;
-                    this.showSpread();
-                }
+                // 일반구간: 둘 다 변경
+                this.currentSpreadIndex += direction;
+                this.virtualSpreadIndex += direction;
             }
         } else {
-            if (this.currentSpreadIndex > 0) {
-                this.currentSpreadIndex--;
-
-                this.showSpread();
-            }
+            // 가상화 없음: current만 변경
+            this.currentSpreadIndex += direction;
         }
+
+        this.showSpread();
+    }
+
+    public showNext(): void {
+        this.moveSpread(1);
+    }
+
+    public showPrev(): void {
+        this.moveSpread(-1);
     }
 
     /**
@@ -392,8 +386,8 @@ export abstract class PageCollection {
         console.log('실제 물리 페이지', this.currentPageIndex);
 
         return (
-            this.virtualSpreadIndex > this.loopZoneStart && // >=
-            this.virtualSpreadIndex < this.loopZoneEnd
+            this.virtualSpreadIndex >= this.loopZoneStart && // >=
+            this.virtualSpreadIndex <= this.loopZoneEnd
         );
     }
 
