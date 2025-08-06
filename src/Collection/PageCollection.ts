@@ -233,6 +233,7 @@ export abstract class PageCollection {
                 this.showSpread();
             } else {
                 if (this.virtualSpreadIndex < this.getSpread(true).length) {
+                    // 문제 있으면 -1 추가 해야할지도?
                     this.currentSpreadIndex++;
                     this.virtualSpreadIndex++;
                     this.showSpread();
@@ -414,7 +415,8 @@ export abstract class PageCollection {
         }
 
         let lastTrace = 0;
-        for (let i = virtualSpreadLength; this.loopZoneEnd < i; i--) {
+        for (let i = virtualSpreadLength - 1; i >= this.loopZoneEnd; i--) {
+            // 배열 길이가 5면 인덱스는 0~4인데, 5부터 시작함 그래서 -1
             if (pageNum === virtualSpread[i][0] || pageNum === virtualSpread[i][1])
                 return spread.length - lastTrace;
             lastTrace++;
