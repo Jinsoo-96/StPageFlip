@@ -26,10 +26,17 @@ export declare abstract class PageCollection {
     protected virtualLandscapeSpread: NumberArray[];
     protected virtualPortraitSpread: NumberArray[];
     protected totalVirtualPages: number;
-    /** 루프 존 관련 캐시 */
-    protected loopZoneStart: number;
-    protected loopZoneEnd: number;
-    protected loopSpreadIndex: number;
+    /** 루프 존 관련 캐시 - orientation별로 분리 */
+    protected portraitLoopZone: {
+        start: number;
+        end: number;
+        centerIndex: number;
+    };
+    protected landscapeLoopZone: {
+        start: number;
+        end: number;
+        centerIndex: number;
+    };
     protected constructor(app: PageFlip, render: Render);
     /**
      * Load pages

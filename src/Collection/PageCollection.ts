@@ -31,10 +31,22 @@ export abstract class PageCollection {
     protected virtualLandscapeSpread: NumberArray[] = [];
     protected virtualPortraitSpread: NumberArray[] = [];
     protected totalVirtualPages = 0; // 전체 가상 페이지 수
-    /** 루프 존 관련 캐시 */
-    protected loopZoneStart = 0;
-    protected loopZoneEnd = 0;
-    protected loopSpreadIndex = 0;
+    // /** 루프 존 관련 캐시 */
+    // protected loopZoneStart = 0;
+    // protected loopZoneEnd = 0;
+    // protected loopSpreadIndex = 0;
+
+    /** 루프 존 관련 캐시 - orientation별로 분리 */
+    protected portraitLoopZone = {
+        start: 0,
+        end: 0,
+        centerIndex: 0,
+    };
+    protected landscapeLoopZone = {
+        start: 0,
+        end: 0,
+        centerIndex: 0,
+    };
 
     protected constructor(app: PageFlip, render: Render) {
         this.render = render;
@@ -376,27 +388,15 @@ export abstract class PageCollection {
             this.virtualLandscapeSpread.push([i, i + 1]);
         }
 
-        const realSpreadCount = this.getSpread(false).length;
-        const virtualSpreadCount = this.getSpread(true).length;
+        this.portraitLoopZone.centerIndex = Math.floor(this.portraitSpread.length / 2);
+        this.portraitLoopZone.start = this.portraitLoopZone.centerIndex;
+        this.portraitLoopZone.end =
+            this.virtualPortraitSpread.length - this.portraitLoopZone.centerIndex;
+        this.landscapeLoopZone.centerIndex = Math.floor(this.landscapeSpread.length / 2);
+        this.landscapeLoopZone.start = this.landscapeLoopZone.centerIndex;
+        this.landscapeLoopZone.end =
+            this.virtualLandscapeSpread.length - this.landscapeLoopZone.centerIndex;
 
-        // LANDSCAPE와 PORTRAIT의 루프 발생 지점 기준을 다르게
-        if (this.render.getOrientation() === Orientation.LANDSCAPE) {
-            // LANDSCAPE: PORTRAIT의 절반이므로 한 번 더 절반으로
-            // 또는 더 간단하게
-            this.loopSpreadIndex = Math.floor(realSpreadCount / 4);
-            console.log(
-                'realSpreadCount',
-                realSpreadCount,
-                'loopSpreadIndex',
-                this.loopSpreadIndex,
-            );
-        } else {
-            // PORTRAIT: 기존 방식
-            this.loopSpreadIndex = Math.floor(realSpreadCount / 2);
-        }
-
-        this.loopZoneStart = this.loopSpreadIndex;
-        this.loopZoneEnd = virtualSpreadCount - this.loopSpreadIndex;
         // }
     }
 
@@ -404,15 +404,26 @@ export abstract class PageCollection {
     public isInLoopZone(): boolean {
         if (!this.totalVirtualPages) return false;
 
+        let loopZoneStart = 0;
+        let loopZoneEnd = 0;
+
+        if (this.render.getOrientation() === Orientation.LANDSCAPE) {
+            loopZoneStart = this.landscapeLoopZone.start;
+            loopZoneEnd = this.landscapeLoopZone.end;
+        } else {
+            loopZoneStart = this.portraitLoopZone.start;
+            loopZoneEnd = this.portraitLoopZone.end;
+        }
+
         console.log('현재 가상 페이지 인덱스', this.virtualPageIndex);
         console.log('현재 가상 스프레드 인덱스', this.virtualSpreadIndex);
         console.log('펼침 배열', this.virtualLandscapeSpread);
         console.log('접힘 배열', this.virtualPortraitSpread);
-        console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
+        console.log('루프존 시작', loopZoneStart, '끝', loopZoneEnd);
         console.log('실제 물리 페이지', this.currentPageIndex);
         return (
-            this.virtualSpreadIndex >= this.loopZoneStart && // >=
-            this.virtualSpreadIndex < this.loopZoneEnd
+            this.virtualSpreadIndex >= loopZoneStart && // >=
+            this.virtualSpreadIndex < loopZoneEnd
         );
     }
 
@@ -426,19 +437,31 @@ export abstract class PageCollection {
         const virtualSpread = this.getSpread(true);
         let virtualSpreadLength = 0;
 
+        let loopZoneStart = 0;
+        let loopSpreadIndex = 0;
+        let loopZoneEnd;
+
+        if (this.render.getOrientation() === Orientation.LANDSCAPE) {
+            loopZoneStart = this.landscapeLoopZone.start;
+            loopZoneEnd = this.landscapeLoopZone.end;
+        } else {
+            loopZoneStart = this.portraitLoopZone.start;
+            loopZoneEnd = this.portraitLoopZone.end;
+        }
+
         // 루프존 로직 검토해야 하긴 함
         // 2. 루프 존이라면, 중앙에 해당하는 스프레드 인덱스를 반환합니다.
 
-        for (let i = 0; i < this.loopZoneStart; i++)
+        for (let i = 0; i < loopZoneStart; i++)
             if (pageNum === spread[i][0] || pageNum === spread[i][1]) return i;
 
         virtualSpreadLength = virtualSpread.length;
-        if (this.loopZoneStart <= pageNum && pageNum < virtualSpreadLength) {
-            return this.loopSpreadIndex;
+        if (loopZoneStart <= pageNum && pageNum < virtualSpreadLength) {
+            return loopSpreadIndex;
         }
 
         let lastTrace = 0;
-        for (let i = virtualSpreadLength - 1; i >= this.loopZoneEnd; i--) {
+        for (let i = virtualSpreadLength - 1; i >= loopZoneEnd; i--) {
             // 배열 길이가 5면 인덱스는 0~4인데, 5부터 시작함 그래서 -1
             if (pageNum === virtualSpread[i][0] || pageNum === virtualSpread[i][1])
                 spread.length - lastTrace - 1;
