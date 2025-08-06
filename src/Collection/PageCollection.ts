@@ -393,6 +393,8 @@ export abstract class PageCollection {
     public isInLoopZone(): boolean {
         if (!this.totalVirtualPages) return false;
 
+        console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
+
         return (
             this.virtualSpreadIndex >= this.loopZoneStart && // >=
             this.virtualSpreadIndex < this.loopZoneEnd
