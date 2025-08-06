@@ -250,7 +250,7 @@ export abstract class PageCollection {
                 this.virtualSpreadIndex++;
                 this.showSpread();
             } else {
-                if (this.virtualSpreadIndex < this.getSpread(true).length) {
+                if (this.virtualSpreadIndex < this.getSpread(true).length - 1) {
                     this.currentSpreadIndex++;
                     this.virtualSpreadIndex++;
                     this.showSpread();
