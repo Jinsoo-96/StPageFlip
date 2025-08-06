@@ -379,11 +379,17 @@ export abstract class PageCollection {
         const realSpreadCount = this.getSpread(false).length;
         const virtualSpreadCount = this.getSpread(true).length;
 
+        // LANDSCAPE와 PORTRAIT의 루프 발생 지점 기준을 다르게
         if (this.render.getOrientation() === Orientation.LANDSCAPE) {
             // LANDSCAPE: PORTRAIT의 절반이므로 한 번 더 절반으로
-            this.loopSpreadIndex = Math.floor(realSpreadCount / 2 / 2);
             // 또는 더 간단하게
             this.loopSpreadIndex = Math.floor(realSpreadCount / 4);
+            console.log(
+                'realSpreadCount',
+                realSpreadCount,
+                'loopSpreadIndex',
+                this.loopSpreadIndex,
+            );
         } else {
             // PORTRAIT: 기존 방식
             this.loopSpreadIndex = Math.floor(realSpreadCount / 2);
