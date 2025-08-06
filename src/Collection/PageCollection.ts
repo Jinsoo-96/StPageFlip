@@ -379,11 +379,16 @@ export abstract class PageCollection {
         const realSpreadCount = this.getSpread(false).length;
         const virtualSpreadCount = this.getSpread(true).length;
 
-        // this.hasLoopZone = virtualSpreadCount > realSpreadCount;
+        if (this.render.getOrientation() === Orientation.LANDSCAPE) {
+            // LANDSCAPE: PORTRAIT의 절반이므로 한 번 더 절반으로
+            this.loopSpreadIndex = Math.floor(realSpreadCount / 2 / 2);
+            // 또는 더 간단하게
+            this.loopSpreadIndex = Math.floor(realSpreadCount / 4);
+        } else {
+            // PORTRAIT: 기존 방식
+            this.loopSpreadIndex = Math.floor(realSpreadCount / 2);
+        }
 
-        // if (this.hasLoopZone) {
-        // const centerIndex = Math.floor(realSpreadCount / 2);
-        this.loopSpreadIndex = Math.floor(realSpreadCount / 2);
         this.loopZoneStart = this.loopSpreadIndex;
         this.loopZoneEnd = virtualSpreadCount - this.loopSpreadIndex;
         // }
@@ -393,8 +398,12 @@ export abstract class PageCollection {
     public isInLoopZone(): boolean {
         if (!this.totalVirtualPages) return false;
 
+        console.log('현재 가상 페이지 인덱스', this.virtualPageIndex);
+        console.log('현재 가상 스프레드 인덱스', this.virtualSpreadIndex);
+        console.log('펼침 배열', this.virtualLandscapeSpread);
+        console.log('접힘 배열', this.virtualPortraitSpread);
         console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
-
+        console.log('실제 물리 페이지', this.currentPageIndex);
         return (
             this.virtualSpreadIndex >= this.loopZoneStart && // >=
             this.virtualSpreadIndex < this.loopZoneEnd
