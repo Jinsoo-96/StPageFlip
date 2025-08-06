@@ -383,6 +383,12 @@ export abstract class PageCollection {
     /** 루프 존 체크 (최적화됨) */
     public isInLoopZone(): boolean {
         if (!this.totalVirtualPages) return false;
+        console.log('지금 모드', this.render.getOrientation());
+        console.log('현재 가상 페이지 인덱스', this.virtualPageIndex);
+        console.log('현재 가상 스프레드 인덱스', this.virtualSpreadIndex);
+        console.log('펼침 배열', this.virtualLandscapeSpread);
+        console.log('접힘 배열', this.virtualPortraitSpread);
+        console.log('루프존 시작', this.loopZoneStart, '끝', this.loopZoneEnd);
 
         return (
             this.virtualSpreadIndex >= this.loopZoneStart &&
