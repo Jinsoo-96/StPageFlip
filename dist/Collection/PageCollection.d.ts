@@ -129,15 +129,16 @@ export declare abstract class PageCollection {
      * Show current spread
      */
     private showSpread;
+    private buildVirtualSpreads;
     /** 루프 존 계산 및 캐싱 */
     private calculateLoopZone;
     /** 루프 존 체크 (최적화됨) */
     isInLoopZone(direction: 'NEXT' | 'PREV'): boolean;
     /**
-     * Get spread index by page number
+     * Get virtual spread index by page number (virtualSpreadIndex 설정 포함)
      *
-     * @param {number} pageNum - page index
+     * @param {number} pageNum - 찾고자 하는 페이지 번호
      */
-    getVirtualSpreadIndexByPage(pageNum: number): number;
+    getVirtualSpreadIndexByPage(pageNum: number): number | null;
 }
 export {};
