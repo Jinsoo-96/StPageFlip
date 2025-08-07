@@ -132,7 +132,7 @@ export declare abstract class PageCollection {
     /** 루프 존 계산 및 캐싱 */
     private calculateLoopZone;
     /** 루프 존 체크 (최적화됨) */
-    isInLoopZone(): boolean;
+    isInLoopZone(direction: 'NEXT' | 'PREV'): boolean;
     /**
      * Get spread index by page number
      *

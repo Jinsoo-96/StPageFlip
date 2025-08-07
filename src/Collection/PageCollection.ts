@@ -239,12 +239,12 @@ export abstract class PageCollection {
      */
     public showNext(): void {
         if (this.totalVirtualPages) {
-            if (this.isInLoopZone()) {
+            if (this.isInLoopZone('NEXT')) {
                 this.virtualSpreadIndex++;
                 this.showSpread();
                 console.log('showNext 시작:', {
                     totalVirtualPages: this.totalVirtualPages,
-                    isInLoopZone: this.isInLoopZone(),
+                    isInLoopZone: this.isInLoopZone('NEXT'),
                     currentSpreadIndex: this.currentSpreadIndex,
                     virtualSpreadIndex: this.virtualSpreadIndex,
                     orientation: this.render.getOrientation(),
@@ -256,7 +256,7 @@ export abstract class PageCollection {
                     this.showSpread();
                     console.log('showNext 시작:', {
                         totalVirtualPages: this.totalVirtualPages,
-                        isInLoopZone: this.isInLoopZone(),
+                        isInLoopZone: this.isInLoopZone('NEXT'),
                         currentSpreadIndex: this.currentSpreadIndex,
                         virtualSpreadIndex: this.virtualSpreadIndex,
                         orientation: this.render.getOrientation(),
@@ -276,12 +276,12 @@ export abstract class PageCollection {
      */
     public showPrev(): void {
         if (this.totalVirtualPages) {
-            if (this.isInLoopZone()) {
+            if (this.isInLoopZone('PREV')) {
                 this.virtualSpreadIndex--;
                 this.showSpread();
                 console.log('showPrev 시작:', {
                     totalVirtualPages: this.totalVirtualPages,
-                    isInLoopZone: this.isInLoopZone(),
+                    isInLoopZone: this.isInLoopZone('PREV'),
                     currentSpreadIndex: this.currentSpreadIndex,
                     virtualSpreadIndex: this.virtualSpreadIndex,
                     orientation: this.render.getOrientation(),
@@ -293,7 +293,7 @@ export abstract class PageCollection {
                     this.showSpread();
                     console.log('showPrev 시작:', {
                         totalVirtualPages: this.totalVirtualPages,
-                        isInLoopZone: this.isInLoopZone(),
+                        isInLoopZone: this.isInLoopZone('PREV'),
                         currentSpreadIndex: this.currentSpreadIndex,
                         virtualSpreadIndex: this.virtualSpreadIndex,
                         orientation: this.render.getOrientation(),
@@ -419,7 +419,7 @@ export abstract class PageCollection {
     }
 
     /** 루프 존 체크 (최적화됨) */
-    public isInLoopZone(): boolean {
+    public isInLoopZone(direction: 'NEXT' | 'PREV'): boolean {
         if (!this.totalVirtualPages) return false;
 
         let loopZoneStart = 0;
@@ -435,10 +435,16 @@ export abstract class PageCollection {
 
         console.log('루프존 시작', loopZoneStart, '끝', loopZoneEnd);
 
-        return (
-            this.virtualSpreadIndex >= loopZoneStart && // >=
-            this.virtualSpreadIndex < loopZoneEnd
-        );
+        if (direction === 'NEXT') {
+            return (
+                this.virtualSpreadIndex >= loopZoneStart && this.virtualSpreadIndex < loopZoneEnd
+            );
+        } else {
+            // PREV
+            return (
+                this.virtualSpreadIndex > loopZoneStart && this.virtualSpreadIndex <= loopZoneEnd
+            );
+        }
     }
 
     /**
