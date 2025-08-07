@@ -53,6 +53,7 @@ export abstract class PageCollection {
         this.app = app;
 
         this.currentPageIndex = 0;
+        this.virtualSpreadIndex = 0;
         this.isShowCover = this.app.getSettings().showCover;
 
         this.totalVirtualPages = this.app.getSettings().totalVirtualPages;
